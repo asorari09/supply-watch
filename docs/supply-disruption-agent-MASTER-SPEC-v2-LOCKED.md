@@ -288,6 +288,21 @@ For each `active` signal, determine exposure deterministically and explainably. 
 
 A shipment is exposed if any `route_regions[]` (or route points) intersect the signal area; a supplier is exposed if its location does. Every flag is explainable as "signal X's region overlapped supplier/shipment Y."
 
+### §10.1 Resolutions (exposure edge cases)
+These pin down three cases the base §10 rules leave open; they are deterministic and hand-computable.
+1. **Delay horizon fallback.** The `shipment_route` on_order-exclusion test `new_eta > now + LT'` uses the SKU's
+   supplier `LT'` when that supplier has a `supplier_region` exposure this tick; otherwise it uses `LT_base`
+   (the un-adjusted lead time). A delayed shipment is always evaluated — against the adjusted window if the
+   supplier is also disrupted, else against the base window.
+2. **Clock discipline.** `now` in the horizon test is the tick clock, `ctx.clock.now()`, evaluated ONCE per tick.
+   The correlation/assessment core is PURE and CLOCK-FREE: the tick computes `horizonBase = now` and passes it in
+   as a value. The engine never reads a clock — this preserves replay determinism.
+3. **Multi-signal delay stacking.** When multiple active signals expose the same supplier/SKU in one tick, their
+   `delay_days` STACK ADDITIVELY: `LT' = LT_base + Σ delay_days`, capped at `MAX_LEAD_TIME_DELTA` (config default
+   60 days) so a noisy tick cannot produce absurd lead times. One ReorderRecommendation per SKU reflects the
+   combined `LT'`; a RiskFlag is still emitted per contributing (signal, exposed-item) pair so each flag traces to
+   its signal. `computed_lead_time_delta` on each flag records that flag's own signal's delay contribution.
+
 ---
 
 ## 11. Data model & schemas (incl. idempotency keys)
