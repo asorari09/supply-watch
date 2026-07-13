@@ -1,0 +1,9 @@
+{
+  "latitude": 29.7604,
+  "longitude": -95.3698,
+  "daily": {
+    "time": ["2026-07-13"],
+    "precipitation_sum": [4.7],
+    "weather_code": [63]
+  }
+}

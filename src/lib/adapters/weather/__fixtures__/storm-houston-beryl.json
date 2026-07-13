@@ -1,0 +1,10 @@
+{
+  "latitude": 29.771528,
+  "longitude": -95.33099,
+  "daily": {
+    "time": ["2024-07-08"],
+    "wind_gusts_10m_max": [126.7],
+    "precipitation_sum": [82.8],
+    "weather_code": [65]
+  }
+}

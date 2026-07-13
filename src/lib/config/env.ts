@@ -16,6 +16,8 @@ const envSchema = z.object({
   LLM_MODEL_NARRATION: optionalNonEmptyString,
   LLM_MODEL_COMMS: optionalNonEmptyString,
   OPEN_METEO_BASE_URL: optionalNonEmptyString,
+  WEATHER_TIMEOUT_MS: z.coerce.number().int().positive().default(8000),
+  WEATHER_RETRIES: z.coerce.number().int().nonnegative().default(2),
   NEWS_RSS_FEEDS: optionalNonEmptyString,
 });
 

@@ -1,0 +1,9 @@
+{
+  "latitude": 29.7604,
+  "longitude": -95.3698,
+  "daily": {
+    "wind_gusts_10m_max": [33.5],
+    "precipitation_sum": [4.7],
+    "weather_code": [63]
+  }
+}
