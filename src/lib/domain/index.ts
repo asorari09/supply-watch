@@ -1,1 +1,12 @@
-// Domain schemas and types are introduced in Step 2.
+export * from "@/lib/domain/alert";
+export * from "@/lib/domain/approval-record";
+export * from "@/lib/domain/common";
+export * from "@/lib/domain/comms-draft";
+export * from "@/lib/domain/enums";
+export * from "@/lib/domain/reorder-recommendation";
+export * from "@/lib/domain/risk-flag";
+export * from "@/lib/domain/shipment";
+export * from "@/lib/domain/signal";
+export * from "@/lib/domain/sku";
+export * from "@/lib/domain/supplier";
+export * from "@/lib/domain/tick-log";
