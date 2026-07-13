@@ -35,6 +35,10 @@ coverage
 # vercel
 .vercel
 
+# Supabase CLI state
+supabase/.temp
+supabase/.branches
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
