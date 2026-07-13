@@ -36,6 +36,7 @@ const config = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "src/lib/db/database.types.ts",
     ],
   },
   {
