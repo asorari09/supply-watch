@@ -19,6 +19,7 @@ const envSchema = z.object({
   WEATHER_TIMEOUT_MS: z.coerce.number().int().positive().default(8000),
   WEATHER_RETRIES: z.coerce.number().int().nonnegative().default(2),
   NEWS_RSS_FEEDS: optionalNonEmptyString,
+  NEWS_TIMEOUT_MS: z.coerce.number().int().positive().default(8000),
 });
 
 export type Env = z.infer<typeof envSchema>;
