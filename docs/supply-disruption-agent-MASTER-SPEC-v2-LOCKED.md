@@ -268,9 +268,9 @@ Definitions: `d` = avg daily demand, `σ_d` = demand std/day, `LT'` = disruption
 - `IP`, `recommended_qty`, and all persisted quantities are **integers**.
 - All intermediate math in floating point; **round only at these named points.** Eval fixtures are hand-computed against exactly this contract.
 
-Worked example (MOQ 100): `d=10, σ_d=3, LT'=21, σ_LT=2, Z=1.645`. `μ_LT=210`. `SS_raw = 1.645 × sqrt(21×9 + 100×4) = 1.645 × sqrt(589) ≈ 39.93 → SS=40`. `ROP = ceil(210 + 39.93) = 250`. If `IP=120`: shortfall `= 130`. `EOQ` (say `EOQ_raw≈245 → 245`). `recommended_qty = ceilToMoq(max(245,130)) = ceilToMoq(245) = 100 × ceil(2.45) = 300`.
+Worked example (MOQ 100): `d=10, σ_d=3, LT'=21, σ_LT=2, Z=1.645, S=100, H=5, on_hand=120, on_order=0, backorders=0`. `μ_LT = d × LT' = 210`. `SS_raw = 1.645 × sqrt(21×9 + 100×4) = 1.645 × sqrt(589) ≈ 39.93 → SS = ceil(39.93) = 40`. `ROP = ceil(210 + 39.93) = ceil(249.93) = 250`. `D = d × 365 = 3650`. `EOQ_raw = sqrt(2 × 3650 × 100 / 5) = sqrt(146000) ≈ 382.10 → EOQ = ceil(382.10) = 383`. `IP = 120 + 0 − 0 = 120`. `IP < ROP` → flag. `shortfall = ROP − IP = 130`. `recommended_qty = ceilToMoq(max(383, 130)) = ceilToMoq(383) = 100 × ceil(3.83) = 400`.
 
-**Rules:** every function returns the inputs it used and the formula branch taken (audit + templated rationale). Missing inputs → `is_insufficient_data = true`, never a guess. Templated rationale, no LLM: `"IP 120 < ROP 250 (LT 14→21d, port closure). SS 40. Order 300 (EOQ 245, shortfall 130 → max 245 → MOQ 300)."` (The "demand shock" idea is **out of scope** — the exposure mapping emits only a lead-time delta. B5/Imp5.)
+**Rules:** every function returns the inputs it used and the formula branch taken (audit + templated rationale). Missing inputs → `is_insufficient_data = true`, never a guess. Templated rationale, no LLM: `"IP 120 < ROP 250 (LT 14→21d, port closure). SS 40. Order 400 (EOQ 383, shortfall 130 → max 383 → MOQ 400)."` (The "demand shock" idea is **out of scope** — the exposure mapping emits only a lead-time delta. B5/Imp5.)
 
 ---
 
