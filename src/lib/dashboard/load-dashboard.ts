@@ -201,6 +201,26 @@ export const loadDashboard = async (): Promise<DashboardData> => {
       flagsBySkuId.set(flag.sku_id, grouped);
     }
 
+    const draftIds = draftRows.map((draft) => draft.id);
+    const editedBodyByDraftId = new Map<string, string>();
+    if (draftIds.length > 0) {
+      const approvals = await client
+        .from("approval_records")
+        .select("draft_id, decision, edited_body, decided_at")
+        .in("draft_id", draftIds)
+        .eq("decision", "approved")
+        .order("decided_at", { ascending: false });
+      if (approvals.error !== null) return emptyDashboardData();
+      for (const record of approvals.data ?? []) {
+        if (
+          record.edited_body === null ||
+          editedBodyByDraftId.has(record.draft_id)
+        )
+          continue;
+        editedBodyByDraftId.set(record.draft_id, record.edited_body);
+      }
+    }
+
     return {
       signals: signalRows.map((signal) => ({
         id: signal.id,
@@ -262,7 +282,7 @@ export const loadDashboard = async (): Promise<DashboardData> => {
         return {
           id: draft.id,
           subject: draft.subject,
-          body: draft.body,
+          body: editedBodyByDraftId.get(draft.id) ?? draft.body,
           tone: draft.tone,
           status: draft.status,
           sku: sku?.sku ?? "Linked SKU unavailable",
