@@ -32,6 +32,7 @@ export interface DashboardDraft {
   subject: string;
   body: string;
   tone: string;
+  status: "pending_approval" | "approved" | "rejected" | "sent";
   sku: string;
   ss: number | null;
   rop: number | null;
@@ -105,7 +106,7 @@ export const loadDashboard = async (): Promise<DashboardData> => {
       client
         .from("comms_drafts")
         .select()
-        .eq("status", "pending_approval")
+        .in("status", ["pending_approval", "approved", "rejected", "sent"])
         .order("created_at", { ascending: false })
         .limit(8),
       client
@@ -239,6 +240,7 @@ export const loadDashboard = async (): Promise<DashboardData> => {
           subject: draft.subject,
           body: draft.body,
           tone: draft.tone,
+          status: draft.status,
           sku: sku?.sku ?? "Linked SKU unavailable",
           ss: recommendation?.ss ?? null,
           rop: recommendation?.rop ?? null,

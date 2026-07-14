@@ -8,6 +8,7 @@ import {
 } from "@/lib/dashboard/load-dashboard";
 
 import styles from "./page.module.css";
+import { PendingApprovals } from "./pending-approvals";
 
 export const metadata: Metadata = {
   title: "Supply Risk Console",
@@ -148,52 +149,6 @@ const AtRiskCard = ({ risk }: { risk: DashboardRisk }) => {
     </article>
   );
 };
-
-const PendingApprovals = ({ drafts }: Pick<DashboardData, "drafts">) => (
-  <section className={styles.panel} aria-labelledby="approvals-title">
-    <div className={styles.panelHeader}>
-      <div>
-        <p className={styles.eyebrow}>Human review queue</p>
-        <h2 id="approvals-title">Pending approvals</h2>
-      </div>
-      <span className={styles.count}>{drafts.length} waiting</span>
-    </div>
-    {drafts.length === 0 ? (
-      <EmptyState>No supplier communications await review.</EmptyState>
-    ) : (
-      <div className={styles.draftList}>
-        {drafts.map((draft) => (
-          <article className={styles.draft} key={draft.id}>
-            <div>
-              <p className={styles.draftSku}>{draft.sku}</p>
-              <h3>{draft.subject}</h3>
-              <p className={styles.draftBody}>{draft.body}</p>
-              <span className={styles.tone}>{draft.tone}</span>
-            </div>
-            <dl>
-              <div>
-                <dt>Safety stock</dt>
-                <dd>{draft.ss ?? "—"}</dd>
-              </div>
-              <div>
-                <dt>ROP</dt>
-                <dd>{draft.rop ?? "—"}</dd>
-              </div>
-              <div>
-                <dt>Inventory position</dt>
-                <dd>{draft.inventoryPosition ?? "—"}</dd>
-              </div>
-              <div>
-                <dt>Recommendation</dt>
-                <dd>{draft.recommendedQty ?? "—"} units</dd>
-              </div>
-            </dl>
-          </article>
-        ))}
-      </div>
-    )}
-  </section>
-);
 
 const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
   const visibleAlerts = alerts.filter(
