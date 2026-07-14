@@ -1112,6 +1112,11 @@ details:not([open]) > summary.toggleCleared {
   padding: 0 4px;
 }
 
+.mapLegendLabel {
+  color: var(--ink);
+  margin-right: 2px;
+}
+
 .mapLegend span {
   align-items: center;
   display: inline-flex;

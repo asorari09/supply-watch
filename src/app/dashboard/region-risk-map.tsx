@@ -234,6 +234,7 @@ export const RegionRiskMap = ({ network }: { network: DashboardNetwork }) => {
         </ZoomableGroup>
       </ComposableMap>
       <div className={styles.mapLegend}>
+        <span className={styles.mapLegendLabel}>Severity:</span>
         <span>
           <i className={`${styles.legendSwatch} ${styles.mapPinHigh}`} /> High
         </span>
