@@ -747,15 +747,15 @@
 
 .heroGrid {
   display: grid;
-  gap: 14px;
-  grid-template-columns: minmax(0, 1.7fr) minmax(240px, 0.9fr);
-  margin-bottom: 28px;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1.75fr) minmax(220px, 0.85fr);
+  margin-bottom: 16px;
 }
 
 .heroSide {
-  display: grid;
-  gap: 12px;
   align-content: start;
+  display: grid;
+  gap: 8px;
 }
 
 .mapFigure {
@@ -765,21 +765,21 @@
   box-shadow: var(--shadow-panel);
   margin: 0;
   overflow: hidden;
-  padding: 12px;
+  padding: 8px 8px 6px;
   position: relative;
 }
 
 .mapOverlay {
-  background: rgb(255 255 255 / 88%);
+  background: rgb(255 255 255 / 92%);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--ink);
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 650;
-  left: 22px;
-  padding: 8px 10px;
+  left: 16px;
+  padding: 5px 8px;
   position: absolute;
-  top: 22px;
+  top: 16px;
   z-index: 1;
 }
 
@@ -790,17 +790,28 @@
 }
 
 .mapOcean {
-  fill: #eef1f6;
+  fill: #e8ecf3;
 }
 
 .mapLand {
-  fill: #dfe3eb;
-  opacity: 0.85;
+  fill: #cfd6e2;
+  stroke: #b8c0cf;
+  stroke-width: 0.75;
+}
+
+.mapLandAccent {
+  fill: #bec6d4;
+  opacity: 0.7;
+}
+
+.mapGraticule {
+  stroke: #d5dae4;
+  stroke-width: 0.6;
 }
 
 .mapPin {
   stroke: #ffffff;
-  stroke-width: 1.5;
+  stroke-width: 1.6;
 }
 
 .mapPinHigh {
@@ -816,105 +827,142 @@
 }
 
 .mapPinHealthy {
-  fill: #9aa1b2;
+  fill: #8b93a5;
 }
 
-.mapGlow {
-  opacity: 0.28;
-  stroke: none;
+.mapRing {
+  fill: none;
+  opacity: 0.9;
+  stroke-width: 2.25;
 }
 
-.mapGlow.mapPinHigh {
-  fill: var(--critical);
+.mapRing.mapPinHigh {
+  stroke: var(--critical);
 }
 
-.mapGlow.mapPinMed {
-  fill: var(--warning);
+.mapRing.mapPinMed {
+  stroke: var(--warning);
 }
 
-.mapGlow.mapPinLow {
-  fill: var(--accent);
+.mapRing.mapPinLow {
+  stroke: var(--accent);
+}
+
+.mapHubHalo {
+  fill: #ffffff;
+  stroke: var(--ink);
+  stroke-width: 1.25;
 }
 
 .mapHub {
   fill: var(--ink);
-  stroke: #ffffff;
-  stroke-width: 2;
+  stroke: none;
 }
 
 .mapLabel {
   fill: var(--ink-strong);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 650;
 }
 
 .mapRouteHealthy {
-  opacity: 0.45;
-  stroke: #9aa1b2;
-  stroke-dasharray: 4 4;
-  stroke-width: 1.25;
+  opacity: 0.4;
+  stroke: #9098aa;
+  stroke-dasharray: 3 4;
+  stroke-linecap: round;
+  stroke-width: 1.1;
 }
 
 .mapRouteHigh {
-  opacity: 0.9;
+  opacity: 0.95;
   stroke: var(--critical);
-  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-width: 2.1;
 }
 
 .mapRouteMed {
-  opacity: 0.85;
+  opacity: 0.9;
   stroke: var(--warning);
-  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-width: 1.8;
 }
 
 .mapRouteLow {
-  opacity: 0.8;
+  opacity: 0.85;
   stroke: var(--accent);
+  stroke-linecap: round;
   stroke-width: 1.5;
+}
+
+.mapRouteArrow {
+  fill: #5c6378;
+}
+
+.mapLegend {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.66rem;
+  font-weight: 650;
+  gap: 10px;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.mapLegend span {
+  align-items: center;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.legendSwatch {
+  border-radius: 999px;
+  display: inline-block;
+  height: 8px;
+  width: 8px;
 }
 
 .mapCaption,
 .mapEmpty {
   color: var(--muted);
-  font-size: 0.74rem;
-  margin-top: 8px;
+  font-size: 0.68rem;
+  margin-top: 2px;
   padding: 0 4px 2px;
 }
 
-.donutCard,
-.statCard {
+.donutCard {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-panel);
-  padding: 16px;
+  padding: 10px 12px;
 }
 
-.donutCard h3,
-.statCard strong {
+.donutCard h3 {
   color: var(--ink);
   display: block;
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin: 4px 0 12px;
+  margin: 2px 0 8px;
 }
 
 .donutBody {
   align-items: center;
   display: flex;
-  gap: 16px;
+  gap: 10px;
 }
 
 .donutCenter {
   fill: var(--ink);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .donutLegend {
   display: grid;
-  gap: 8px;
+  gap: 4px;
   list-style: none;
 }
 
@@ -922,45 +970,60 @@
   align-items: center;
   color: var(--ink-strong);
   display: flex;
-  font-size: 0.78rem;
-  gap: 8px;
+  font-size: 0.7rem;
+  gap: 6px;
 }
 
 .donutLegend span {
   border-radius: 999px;
   display: inline-block;
-  height: 8px;
-  width: 8px;
+  height: 7px;
+  width: 7px;
 }
 
 .donutLegend strong {
   color: var(--ink);
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   margin-left: auto;
 }
 
-.statCard span {
+.statChips {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.statChip {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  padding: 8px 10px;
+}
+
+.statChip span {
   color: var(--muted);
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   font-weight: 600;
 }
 
-.statCard em {
-  color: var(--muted);
-  display: block;
-  font-size: 0.72rem;
-  font-style: normal;
-  margin-top: 6px;
-}
-
-.statValue {
+.statChip strong {
   color: var(--ink);
   display: block;
-  font-size: 1.85rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  letter-spacing: -0.04em;
-  margin-top: 8px;
+  letter-spacing: -0.03em;
+  margin-top: 2px;
+}
+
+.statChip em {
+  color: var(--muted);
+  display: block;
+  font-size: 0.66rem;
+  font-style: normal;
+  line-height: 1.3;
+  margin-top: 2px;
 }
 
 @media (max-width: 960px) {
@@ -970,6 +1033,10 @@
 
   .heroGrid {
     grid-template-columns: 1fr;
+  }
+
+  .statChips {
+    grid-template-columns: 1fr 1fr;
   }
 }
 

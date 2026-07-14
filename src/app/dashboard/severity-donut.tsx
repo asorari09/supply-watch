@@ -27,8 +27,8 @@ export const SeverityDonut = ({
     ] as const
   ).filter((segment) => segment.value > 0);
 
-  const radius = 42;
-  const stroke = 14;
+  const radius = 34;
+  const stroke = 11;
   const circumference = 2 * Math.PI * radius;
   let offset = 0;
 
@@ -40,15 +40,10 @@ export const SeverityDonut = ({
         <p className={styles.emptyState}>No at-risk SKUs right now.</p>
       ) : (
         <div className={styles.donutBody}>
-          <svg
-            aria-hidden="true"
-            height={120}
-            viewBox="0 0 120 120"
-            width={120}
-          >
+          <svg aria-hidden="true" height={96} viewBox="0 0 96 96" width={96}>
             <circle
-              cx={60}
-              cy={60}
+              cx={48}
+              cy={48}
               fill="none"
               r={radius}
               stroke="#E6E8EC"
@@ -58,8 +53,8 @@ export const SeverityDonut = ({
               const length = (segment.value / total) * circumference;
               const circle = (
                 <circle
-                  cx={60}
-                  cy={60}
+                  cx={48}
+                  cy={48}
                   fill="none"
                   key={segment.key}
                   r={radius}
@@ -68,7 +63,7 @@ export const SeverityDonut = ({
                   strokeDashoffset={-offset}
                   strokeLinecap="butt"
                   strokeWidth={stroke}
-                  transform="rotate(-90 60 60)"
+                  transform="rotate(-90 48 48)"
                 />
               );
               offset += length;
@@ -78,8 +73,8 @@ export const SeverityDonut = ({
               className={styles.donutCenter}
               dominantBaseline="middle"
               textAnchor="middle"
-              x={60}
-              y={60}
+              x={48}
+              y={48}
             >
               {total}
             </text>

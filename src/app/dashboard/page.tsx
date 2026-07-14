@@ -77,25 +77,20 @@ const NetworkHero = ({ data }: { data: DashboardData }) => (
     <RegionRiskMap network={data.network} />
     <aside className={styles.heroSide}>
       <SeverityDonut breakdown={data.severityBreakdown} />
-      <div className={styles.statCard}>
-        <span>Network health</span>
-        <strong className={styles.statValue}>
-          {data.network.networkHealthPercent}%
-        </strong>
-        <em>
-          {data.network.healthyRegionCount} of {data.network.totalRegionCount}{" "}
-          supplier regions clear
-        </em>
-      </div>
-      <div className={styles.statCard}>
-        <span>Routes at risk</span>
-        <strong className={styles.statValue}>
-          {data.network.disruptedRouteCount}
-        </strong>
-        <em>
-          of {data.network.routes.length} tracked lanes with an active
-          disruption on the path
-        </em>
+      <div className={styles.statChips}>
+        <div className={styles.statChip}>
+          <span>Network health</span>
+          <strong>{data.network.networkHealthPercent}%</strong>
+          <em>
+            {data.network.healthyRegionCount}/{data.network.totalRegionCount}{" "}
+            regions clear
+          </em>
+        </div>
+        <div className={styles.statChip}>
+          <span>Routes at risk</span>
+          <strong>{data.network.disruptedRouteCount}</strong>
+          <em>of {data.network.routes.length} tracked lanes</em>
+        </div>
       </div>
     </aside>
   </section>
