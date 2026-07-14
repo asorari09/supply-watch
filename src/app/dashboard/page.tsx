@@ -183,7 +183,10 @@ const SignalItem = ({
 );
 
 const WhatsHappening = ({ signals }: Pick<DashboardData, "signals">) => {
-  const ongoing = signals.filter((signal) => signal.status !== "resolved");
+  const incomplete = signals.filter((signal) => signal.status === "degraded");
+  const ongoing = signals.filter(
+    (signal) => signal.status !== "resolved" && signal.status !== "degraded",
+  );
   const cleared = signals.filter((signal) => signal.status === "resolved");
   return (
     <section className={styles.panel} aria-labelledby="whats-happening-title">
@@ -202,6 +205,18 @@ const WhatsHappening = ({ signals }: Pick<DashboardData, "signals">) => {
             <SignalItem key={signal.id} signal={signal} />
           ))}
         </ul>
+      )}
+      {incomplete.length === 0 ? null : (
+        <details>
+          <summary className={styles.toggleCleared}>
+            Show incomplete ({incomplete.length})
+          </summary>
+          <ul className={styles.signalList}>
+            {incomplete.map((signal) => (
+              <SignalItem key={signal.id} signal={signal} />
+            ))}
+          </ul>
+        </details>
       )}
       {cleared.length === 0 ? null : (
         <details>
