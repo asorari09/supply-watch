@@ -31,6 +31,11 @@ export const createNarrationLlmClient = (): LlmCompletionClient | undefined =>
     ? undefined
     : new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
+export const createCommsLlmClient = (): LlmCompletionClient | undefined =>
+  env.OPENAI_API_KEY === undefined
+    ? undefined
+    : new OpenAI({ apiKey: env.OPENAI_API_KEY });
+
 export const completeNewsExtraction = async (
   client: LlmCompletionClient | undefined,
   prompt: string,
