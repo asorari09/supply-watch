@@ -15,6 +15,10 @@ const envSchema = z.object({
     .preprocess((value) => value === "true", z.boolean())
     .default(false),
   MAX_NEWS_LLM_PER_TICK: z.coerce.number().int().positive().default(3),
+  ENABLE_LLM_NARRATION: z
+    .preprocess((value) => value === "true", z.boolean())
+    .default(false),
+  MAX_NARRATION_PER_TICK: z.coerce.number().int().positive().default(5),
   LANGFUSE_PUBLIC_KEY: optionalNonEmptyString,
   LANGFUSE_SECRET_KEY: optionalNonEmptyString,
   LANGFUSE_BASE_URL: optionalNonEmptyString,

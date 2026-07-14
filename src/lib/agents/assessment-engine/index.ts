@@ -1,7 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+import {
+  createNarrationLlmClient,
+  type LlmCompletionClient,
+} from "@/lib/adapters/llm/client";
 import { assess } from "@/lib/agents/assessment-engine/assess";
 import { correlate } from "@/lib/agents/assessment-engine/correlate";
+import { narrateAssessment } from "@/lib/agents/assessment-engine/narrate";
+import { env } from "@/lib/config/env";
 import type { Database } from "@/lib/db/database.types";
 import { upsertAlerts } from "@/lib/db/repositories/alerts.repo";
 import { upsertReorderRecommendations } from "@/lib/db/repositories/reorder-recommendations.repo";
@@ -10,7 +16,12 @@ import type { RunContext } from "@/lib/runtime/run-context";
 
 export const runAssessment = async (
   ctx: RunContext,
-  deps: { client: SupabaseClient<Database> },
+  deps: {
+    client: SupabaseClient<Database>;
+    llmClient?: LlmCompletionClient | undefined;
+    enableNarration?: boolean | undefined;
+    maxNarration?: number | undefined;
+  },
 ) => {
   try {
     const [signals, suppliers, skus, shipments] = await Promise.all([
@@ -83,6 +94,32 @@ export const runAssessment = async (
           .eq("id", exposure.shipment.id),
       ),
     );
+    const narration = result.recommendations.map(() => null as string | null);
+    const enableNarration = deps.enableNarration ?? env.ENABLE_LLM_NARRATION;
+    const maxNarration = deps.maxNarration ?? env.MAX_NARRATION_PER_TICK;
+    if (enableNarration) {
+      const llmClient = deps.llmClient ?? createNarrationLlmClient();
+      await Promise.all(
+        result.recommendations
+          .slice(0, maxNarration)
+          .map(async (recommendation, index) => {
+            const flag = result.flags.find(
+              (candidate) => candidate.id === recommendation.riskFlagId,
+            );
+            narration[index] = await narrateAssessment(
+              {
+                flags: flag === undefined ? [] : [flag],
+                recommendations: [recommendation],
+                alerts: result.alerts.filter(
+                  (alert) => alert.flagId === recommendation.riskFlagId,
+                ),
+              },
+              { client: llmClient },
+            );
+          }),
+      );
+    }
+
     return {
       ok: true,
       counts: {
@@ -90,7 +127,7 @@ export const runAssessment = async (
         recommendations: result.recommendations.length,
         alerts: result.alerts.length,
       },
-      result,
+      result: { ...result, narration },
     };
   } catch (error: unknown) {
     return {

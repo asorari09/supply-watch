@@ -22,6 +22,15 @@ export const createNewsLlmClient = (): LlmCompletionClient | undefined =>
     ? undefined
     : new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
+/**
+ * Narration uses the same optional client construction as news extraction.
+ * Keeping this factory separate makes the model surface explicit at call sites.
+ */
+export const createNarrationLlmClient = (): LlmCompletionClient | undefined =>
+  env.OPENAI_API_KEY === undefined
+    ? undefined
+    : new OpenAI({ apiKey: env.OPENAI_API_KEY });
+
 export const completeNewsExtraction = async (
   client: LlmCompletionClient | undefined,
   prompt: string,
