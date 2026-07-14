@@ -96,47 +96,76 @@ const NetworkHero = ({ data }: { data: DashboardData }) => (
   </section>
 );
 
-const ActionRow = ({ risk }: { risk: DashboardRisk }) => (
-  <li className={`${styles.actionRowItem} ${styles[`action${risk.severity}`]}`}>
-    <div className={styles.actionSkuCell}>
-      <span className={`${styles.chip} ${styles[`severity${risk.severity}`]}`}>
-        {formatSeverityLabel(risk.severity)}
-      </span>
-      <span className={styles.actionSku}>{risk.sku}</span>
-    </div>
-    <strong className={styles.actionOrder}>
-      {formatActionOrderTitle(risk.recommendedQty)}
-    </strong>
-    <p className={styles.actionReason}>
-      {formatActionSupportCompact({
-        disruptionTypes: risk.disruptionTypes,
-        leadTimeBase: risk.leadTimeBase,
-        leadTimeDelta: risk.leadTimeDelta,
-        inventoryPosition: risk.inventoryPosition,
-        rop: risk.rop,
-      })}
-    </p>
-    <p className={styles.actionMetrics}>
-      {formatActionMetricsInline({
-        ss: risk.ss,
-        rop: risk.rop,
-        inventoryPosition: risk.inventoryPosition,
-      })}
-    </p>
-    <div className={styles.actionPills}>
-      {risk.exposureTypes.map((exposureType) => (
-        <span className={styles.exposureBadge} key={exposureType}>
-          {formatExposureType(exposureType)}
+const ActionRow = ({ risk }: { risk: DashboardRisk }) => {
+  const pills = [
+    ...risk.exposureTypes.map((exposureType) => ({
+      key: `e-${exposureType}`,
+      label: formatExposureType(exposureType),
+      kind: "exposure" as const,
+    })),
+    ...risk.disruptionTypes.map((type) => ({
+      key: `d-${type}`,
+      label: formatDisruptionType(type),
+      kind: "disruption" as const,
+    })),
+  ];
+  const visiblePills = pills.slice(0, 2);
+  const hiddenCount = pills.length - visiblePills.length;
+
+  return (
+    <li
+      className={`${styles.actionRowItem} ${styles[`action${risk.severity}`]}`}
+    >
+      <div className={styles.actionSkuCell}>
+        <span
+          className={`${styles.chip} ${styles[`severity${risk.severity}`]}`}
+        >
+          {formatSeverityLabel(risk.severity)}
         </span>
-      ))}
-      {risk.disruptionTypes.map((type) => (
-        <span className={styles.disruptionBadge} key={type}>
-          {formatDisruptionType(type)}
-        </span>
-      ))}
-    </div>
-  </li>
-);
+        <span className={styles.actionSku}>{risk.sku}</span>
+      </div>
+      <strong className={styles.actionOrder}>
+        {formatActionOrderTitle(risk.recommendedQty)}
+      </strong>
+      <p className={styles.actionReason}>
+        {formatActionSupportCompact({
+          disruptionTypes: risk.disruptionTypes,
+          leadTimeBase: risk.leadTimeBase,
+          leadTimeDelta: risk.leadTimeDelta,
+          inventoryPosition: risk.inventoryPosition,
+          rop: risk.rop,
+        })}
+      </p>
+      <p className={styles.actionMetrics}>
+        {formatActionMetricsInline({
+          ss: risk.ss,
+          rop: risk.rop,
+          inventoryPosition: risk.inventoryPosition,
+        })}
+      </p>
+      <div className={styles.actionPills}>
+        {visiblePills.map((pill) => (
+          <span
+            className={
+              pill.kind === "exposure"
+                ? styles.exposureBadge
+                : styles.disruptionBadge
+            }
+            key={pill.key}
+            title={pill.label}
+          >
+            {pill.label}
+          </span>
+        ))}
+        {hiddenCount > 0 ? (
+          <span className={styles.pillOverflow} title={`${hiddenCount} more`}>
+            +{hiddenCount}
+          </span>
+        ) : null}
+      </div>
+    </li>
+  );
+};
 
 const MonitoringRow = ({ risk }: { risk: DashboardRisk }) => (
   <li className={styles.monitorRow}>
