@@ -2,7 +2,7 @@
 
 Supply-chain disruption monitoring that turns external signals into deterministic reorder decisions, then drafts supplier communications behind a human approval gate.
 
-This is a scheduled, stateful operations system—not an LLM deciding what to buy. The inventory decision path is deterministic TypeScript; language models are optional, capped drafting and narration helpers.
+This is a scheduled, stateful operations system-not an LLM deciding what to buy. The inventory decision path is deterministic TypeScript; language models are optional, capped drafting and narration helpers.
 
 ## What it does
 
@@ -152,7 +152,7 @@ The live integration suite uses only the dedicated `eval` schema and calls `eval
 | Hourly tick  | Supabase `pg_cron` job `supply_watch_hourly_tick` (`0 * * * *`) POSTs `/api/tick/run` on the stable alias with `Authorization: Bearer <TICK_SECRET>` from Vault |
 | Database     | Supabase Postgres (`public` + `eval`); schema via `supabase/migrations`                                                                                         |
 
-CI (GitHub Actions) runs typecheck, lint, format, offline tests, build, and gitleaks on every push. `pnpm build` does **not** require secrets — env validation is lazy via `getEnv()`. Runtime still fails closed when required vars are missing.
+CI (GitHub Actions) runs typecheck, lint, format, offline tests, build, and gitleaks on every push. `pnpm build` does **not** require secrets - env validation is lazy via `getEnv()`. Runtime still fails closed when required vars are missing.
 
 Configure the cron secret and schedule with `public.configure_hourly_supply_watch_tick(p_tick_secret)` (see migrations `20260714000000` / `20260714000001`). Do not retarget the cron URL away from the stable production alias.
 
