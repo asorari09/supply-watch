@@ -119,17 +119,17 @@ const clearPriorSyntheticScenario = async (
         .in("draft_id", draftIds);
       requireSuccess(error);
     }
-    const [draftDelete, alertDelete, recommendationDelete] = await Promise.all([
+    const [draftDelete, alertDelete] = await Promise.all([
       client.from("comms_drafts").delete().in("risk_flag_id", flagIds),
       client.from("alerts").delete().in("risk_flag_id", flagIds),
-      client
-        .from("reorder_recommendations")
-        .delete()
-        .in("risk_flag_id", flagIds),
     ]);
     requireSuccess(draftDelete.error);
     requireSuccess(alertDelete.error);
-    requireSuccess(recommendationDelete.error);
+    const { error: recommendationDeleteError } = await client
+      .from("reorder_recommendations")
+      .delete()
+      .in("risk_flag_id", flagIds);
+    requireSuccess(recommendationDeleteError);
     const { error: resolveFlagsError } = await client
       .from("risk_flags")
       .update({ status: "resolved" })
@@ -233,30 +233,39 @@ export const injectSyntheticDisruption =
         "Synthetic assessment produced zero flags; demo cascade was not created.",
       );
 
-    const pending = assessment.result.pendingDraftRefs[0];
+    const pending =
+      assessment.result.pendingDraftRefs.find((candidate) =>
+        candidate.flag.signal.dedupeHash.startsWith("synthetic-demo:"),
+      ) ?? assessment.result.pendingDraftRefs[0];
     let pendingDrafts = 0;
     if (pending !== undefined) {
       const { data: recommendation, error: recommendationError } = await client
         .from("reorder_recommendations")
         .select("id")
-        .eq("risk_flag_id", pending.flag.id)
+        .eq("risk_flag_id", pending.recommendation.riskFlagId)
         .eq("inputs_hash", pending.recommendation.inputsHash)
         .maybeSingle();
       requireSuccess(recommendationError);
       if (recommendation !== null) {
-        const { error: draftError } = await client.from("comms_drafts").insert({
-          id: randomUUID(),
-          risk_flag_id: pending.flag.id,
-          recommendation_id: recommendation.id,
-          generation: 1,
-          subject: `Synthetic demo: ${pending.flag.signal.disruptionType.replaceAll("_", " ")}`,
-          body: `Synthetic demo disruption: a ${pending.flag.signal.disruptionType.replaceAll("_", " ")} affects this supply route. Please confirm the updated delivery plan and available mitigation options.`,
-          tone: "direct and collaborative",
-          model_used: "synthetic-demo-template",
-          status: "pending_approval",
-          tick_id: context.tickId,
-          created_at: detectedAt,
-        });
+        const { error: draftError } = await client.from("comms_drafts").upsert(
+          {
+            id: randomUUID(),
+            risk_flag_id: pending.flag.id,
+            recommendation_id: recommendation.id,
+            generation: 1,
+            subject: `Synthetic demo: ${pending.flag.signal.disruptionType.replaceAll("_", " ")}`,
+            body: `Synthetic demo disruption: a ${pending.flag.signal.disruptionType.replaceAll("_", " ")} affects this supply route. Please confirm the updated delivery plan and available mitigation options.`,
+            tone: "direct and collaborative",
+            model_used: "synthetic-demo-template",
+            status: "pending_approval",
+            tick_id: context.tickId,
+            created_at: detectedAt,
+          },
+          {
+            onConflict: "risk_flag_id,recommendation_id,generation",
+            ignoreDuplicates: true,
+          },
+        );
         requireSuccess(draftError);
         pendingDrafts = 1;
       }
