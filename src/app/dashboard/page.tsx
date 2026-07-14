@@ -29,6 +29,8 @@ import {
 import { InjectDisruption } from "./inject-disruption";
 import styles from "./page.module.css";
 import { PendingApprovals } from "./pending-approvals";
+import { RegionRiskMap } from "./region-risk-map";
+import { SeverityDonut } from "./severity-donut";
 
 export const metadata: Metadata = {
   title: "Supply Risk Console",
@@ -51,24 +53,12 @@ const ModeBadge = ({ mode }: { mode: "live" | "replay" }) => (
 );
 
 const KpiBar = ({ data }: { data: DashboardData }) => {
-  const needsReorder = data.risks.filter(
-    (risk) => (risk.recommendedQty ?? 0) > 0,
-  ).length;
-  const awaitingApproval = data.drafts.filter(
-    (draft) => draft.status === "pending_approval",
-  ).length;
-  const readyToSend = data.drafts.filter(
-    (draft) => draft.status === "approved",
-  ).length;
-  const activeDisruptions = data.signals.filter(
-    (signal) => signal.status === "active",
-  ).length;
   const tiles = [
-    { label: "SKUs at risk", value: data.risks.length },
-    { label: "Needs reorder now", value: needsReorder },
-    { label: "Awaiting your approval", value: awaitingApproval },
-    { label: "Approved, ready to send", value: readyToSend },
-    { label: "Active disruptions", value: activeDisruptions },
+    { label: "SKUs at risk", value: data.kpis.skusAtRisk },
+    { label: "Needs reorder now", value: data.kpis.needsReorder },
+    { label: "Awaiting your approval", value: data.kpis.awaitingApproval },
+    { label: "Approved, ready to send", value: data.kpis.readyToSend },
+    { label: "Active disruptions", value: data.kpis.activeDisruptions },
   ];
   return (
     <section aria-label="Executive summary" className={styles.kpiRow}>
@@ -81,6 +71,35 @@ const KpiBar = ({ data }: { data: DashboardData }) => {
     </section>
   );
 };
+
+const NetworkHero = ({ data }: { data: DashboardData }) => (
+  <section aria-label="Supply network risk" className={styles.heroGrid}>
+    <RegionRiskMap network={data.network} />
+    <aside className={styles.heroSide}>
+      <SeverityDonut breakdown={data.severityBreakdown} />
+      <div className={styles.statCard}>
+        <span>Network health</span>
+        <strong className={styles.statValue}>
+          {data.network.networkHealthPercent}%
+        </strong>
+        <em>
+          {data.network.healthyRegionCount} of {data.network.totalRegionCount}{" "}
+          supplier regions clear
+        </em>
+      </div>
+      <div className={styles.statCard}>
+        <span>Routes at risk</span>
+        <strong className={styles.statValue}>
+          {data.network.disruptedRouteCount}
+        </strong>
+        <em>
+          of {data.network.routes.length} tracked lanes with an active
+          disruption on the path
+        </em>
+      </div>
+    </aside>
+  </section>
+);
 
 const ActionCard = ({ risk }: { risk: DashboardRisk }) => (
   <article
@@ -335,6 +354,7 @@ export default async function DashboardPage() {
       </header>
 
       <KpiBar data={data} />
+      <NetworkHero data={data} />
 
       <section className={styles.sectionBlock} aria-labelledby="action-title">
         <div className={styles.sectionTitle}>

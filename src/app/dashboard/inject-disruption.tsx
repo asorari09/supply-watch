@@ -1,11 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { injectDisruptionAction } from "./actions";
 import styles from "./page.module.css";
 
 export const InjectDisruption = () => {
+  const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -17,6 +19,7 @@ export const InjectDisruption = () => {
         setMessage(result.error);
         return;
       }
+      router.refresh();
       setMessage(
         `Demo loaded: ${result.summary.flags} products flagged, ${result.summary.pendingDrafts} message ready for review.`,
       );
