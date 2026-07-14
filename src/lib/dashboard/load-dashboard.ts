@@ -149,27 +149,51 @@ export const loadDashboard = async (): Promise<DashboardData> => {
     const supplierById = new Map(
       supplierRows.map((supplier) => [supplier.id, supplier]),
     );
-    const recommendationByFlagId = new Map(
-      recommendationRows.map((recommendation) => [
-        recommendation.risk_flag_id,
-        recommendation,
-      ]),
-    );
-    const recommendationById = new Map(
-      recommendationRows.map((recommendation) => [
-        recommendation.id,
-        recommendation,
-      ]),
-    );
+    // Rows are newest-first; keep the first write so lookups resolve to the latest.
+    const recommendationByFlagId = new Map<
+      string,
+      (typeof recommendationRows)[number]
+    >();
+    const recommendationById = new Map<
+      string,
+      (typeof recommendationRows)[number]
+    >();
     const recommendationBySkuId = new Map<
       string,
       (typeof recommendationRows)[number]
     >();
     for (const recommendation of recommendationRows) {
+      if (!recommendationByFlagId.has(recommendation.risk_flag_id))
+        recommendationByFlagId.set(recommendation.risk_flag_id, recommendation);
+      if (!recommendationById.has(recommendation.id))
+        recommendationById.set(recommendation.id, recommendation);
       if (!recommendationBySkuId.has(recommendation.sku_id))
         recommendationBySkuId.set(recommendation.sku_id, recommendation);
     }
-    const flagById = new Map(flagRows.map((flag) => [flag.id, flag]));
+
+    const draftFlagIds = [
+      ...new Set(draftRows.map((draft) => draft.risk_flag_id)),
+    ];
+    const alertFlagIds = [
+      ...new Set(alertRows.map((alert) => alert.risk_flag_id)),
+    ];
+    const linkedFlagIds = [
+      ...new Set([...draftFlagIds, ...alertFlagIds]),
+    ].filter((flagId) => !flagRows.some((flag) => flag.id === flagId));
+
+    let linkedFlagRows: typeof flagRows = [];
+    if (linkedFlagIds.length > 0) {
+      const linkedFlags = await client
+        .from("risk_flags")
+        .select()
+        .in("id", linkedFlagIds);
+      if (linkedFlags.error !== null) return emptyDashboardData();
+      linkedFlagRows = linkedFlags.data ?? [];
+    }
+
+    const flagById = new Map(
+      [...flagRows, ...linkedFlagRows].map((flag) => [flag.id, flag]),
+    );
     const flagsBySkuId = new Map<string, (typeof flagRows)[number][]>();
     for (const flag of flagRows) {
       const grouped = flagsBySkuId.get(flag.sku_id) ?? [];
