@@ -143,6 +143,19 @@ The live integration suite uses only the dedicated `eval` schema and calls `eval
 - No real email transport by default. Sends are mock/logged unless explicitly environment-enabled.
 - No queues, Kafka, Redis, Docker, long-lived workers, or forecasting ML. This is a short-lived tick with relational state and closed-form inventory logic.
 
+## Production deployment
+
+| Surface      | Detail                                                                                                                                                          |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App          | Vercel project `supply-watch`, auto-deploys from `master`                                                                                                       |
+| Stable alias | https://supply-watch-abhi-soraris-projects.vercel.app                                                                                                           |
+| Hourly tick  | Supabase `pg_cron` job `supply_watch_hourly_tick` (`0 * * * *`) POSTs `/api/tick/run` on the stable alias with `Authorization: Bearer <TICK_SECRET>` from Vault |
+| Database     | Supabase Postgres (`public` + `eval`); schema via `supabase/migrations`                                                                                         |
+
+CI (GitHub Actions) runs typecheck, lint, format, offline tests, build, and gitleaks on every push. `pnpm build` does **not** require secrets — env validation is lazy via `getEnv()`. Runtime still fails closed when required vars are missing.
+
+Configure the cron secret and schedule with `public.configure_hourly_supply_watch_tick(p_tick_secret)` (see migrations `20260714000000` / `20260714000001`). Do not retarget the cron URL away from the stable production alias.
+
 ## Demo integrity
 
 Inventory is synthetic and labeled. Synthetic injection is visibly marked `Demo · replay`; it is not presented as live weather/news data. Dashboard sends are mocked by default, and the system remains useful with every LLM feature disabled.
