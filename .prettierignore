@@ -6,3 +6,4 @@ AGENTS.md
 pnpm-lock.yaml
 src/lib/db/database.types.ts
 *.log
+public/*.json

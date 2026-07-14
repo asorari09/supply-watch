@@ -1,176 +1,155 @@
+"use client";
+
 import {
-  projectLonLat,
-  type DashboardNetwork,
-  type Severity,
-} from "@/lib/dashboard/map-model";
+  ComposableMap,
+  Geographies,
+  Geography,
+  Line,
+  Marker,
+  Sphere,
+} from "react-simple-maps";
+
+import type { DashboardNetwork, Severity } from "@/lib/dashboard/map-model";
 
 import styles from "./page.module.css";
 
+const GEO_URL = "/world-countries-110m.json";
 const WIDTH = 880;
-const HEIGHT = 300;
+const HEIGHT = 340;
 
-const severityPinClass = (severity: Severity | null) => {
-  if (severity === "high") return styles.mapPinHigh;
-  if (severity === "med") return styles.mapPinMed;
-  if (severity === "low") return styles.mapPinLow;
-  return styles.mapPinHealthy;
+const SEVERITY_FILL: Record<Severity, string> = {
+  high: "#E5484D",
+  med: "#F5A623",
+  low: "#7B75E8",
+  unknown: "#8A90A2",
 };
 
-const routeClass = (severity: Severity | null, atRisk: boolean) => {
-  if (!atRisk) return styles.mapRouteHealthy;
-  if (severity === "high") return styles.mapRouteHigh;
-  if (severity === "med") return styles.mapRouteMed;
-  return styles.mapRouteLow;
+const pinFill = (severity: Severity | null): string =>
+  severity === null ? "#8B93A5" : SEVERITY_FILL[severity];
+
+const routeStroke = (severity: Severity | null, atRisk: boolean): string => {
+  if (!atRisk || severity === null) return "#C4C9D4";
+  return SEVERITY_FILL[severity];
 };
 
-const curvedRoute = (
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-): string => {
-  const dx = to.x - from.x;
-  const midX = from.x + dx * 0.5;
-  const midY = Math.min(from.y, to.y) - Math.abs(dx) * 0.16 - 24;
-  return `M ${from.x} ${from.y} Q ${midX} ${midY} ${to.x} ${to.y}`;
-};
-
-const HubMarker = ({ x, y }: { x: number; y: number }) => (
-  <g transform={`translate(${x} ${y})`}>
-    <circle className={styles.mapHubHalo} cx={0} cy={0} r={14} />
-    <path
-      className={styles.mapHub}
-      d="M0 -9 L2.6 -2.6 L9.5 -2.6 L4 1.8 L6 9 L0 4.6 L-6 9 L-4 1.8 L-9.5 -2.6 L-2.6 -2.6 Z"
-    />
-    <text className={styles.mapLabel} textAnchor="middle" x={0} y={24}>
-      Destination
-    </text>
-  </g>
-);
-
-/**
- * Abstract network diagram (Option B): real supplier lat/lon + routes, no
- * landmass basemap. Chosen because react-simple-maps peers React ≤18 and
- * ships no types — not viable on Next 15 / React 19.
- */
 export const RegionRiskMap = ({ network }: { network: DashboardNetwork }) => {
-  const dest =
-    network.destination === null
-      ? null
-      : projectLonLat(
-          network.destination.lon,
-          network.destination.lat,
-          WIDTH,
-          HEIGHT,
-        );
+  const dest = network.destination;
 
   return (
     <figure className={styles.mapFigure}>
       <div className={styles.mapOverlay}>
-        Network status — {network.networkHealthPercent}% healthy
+        Network status: {network.networkHealthPercent}% healthy
       </div>
-      <svg
-        aria-label="Supply network region risk diagram"
-        className={styles.mapSvg}
-        role="img"
-        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+      <ComposableMap
+        className={styles.mapSvg ?? "mapSvg"}
+        height={HEIGHT}
+        projection="geoNaturalEarth1"
+        projectionConfig={{
+          scale: 155,
+          center: [12, 18],
+        }}
+        width={WIDTH}
       >
-        <defs>
-          <marker
-            id="route-arrow"
-            markerHeight={7}
-            markerWidth={7}
-            orient="auto"
-            refX={6}
-            refY={3.5}
-          >
-            <path className={styles.mapRouteArrow} d="M0,0 L7,3.5 L0,7 Z" />
-          </marker>
-        </defs>
+        <Sphere fill="#F7F8FA" id="ocean" stroke="#E6E8EC" strokeWidth={0.5} />
+        <Geographies geography={GEO_URL}>
+          {({ geographies }) =>
+            geographies.map((geo) => (
+              <Geography
+                geography={geo}
+                key={geo.rsmKey}
+                style={{
+                  default: {
+                    fill: "#E8EBF0",
+                    stroke: "#FFFFFF",
+                    strokeWidth: 0.45,
+                    outline: "none",
+                  },
+                  hover: {
+                    fill: "#E8EBF0",
+                    stroke: "#FFFFFF",
+                    strokeWidth: 0.45,
+                    outline: "none",
+                  },
+                  pressed: {
+                    fill: "#E8EBF0",
+                    stroke: "#FFFFFF",
+                    strokeWidth: 0.45,
+                    outline: "none",
+                  },
+                }}
+              />
+            ))
+          }
+        </Geographies>
 
-        <rect
-          className={styles.mapCanvas}
-          height={HEIGHT}
-          rx={10}
-          width={WIDTH}
-          x={0}
-          y={0}
-        />
+        {network.routes.map((route) => (
+          <Line
+            from={[route.fromLon, route.fromLat]}
+            key={route.id}
+            stroke={routeStroke(route.activeSeverity, route.atRisk)}
+            strokeLinecap="round"
+            strokeOpacity={route.atRisk ? 0.85 : 0.55}
+            strokeWidth={1.5}
+            to={[route.toLon, route.toLat]}
+          />
+        ))}
 
-        {/* Soft zone labels — layout guides only, not geography claims. */}
-        <text className={styles.mapZoneLabel} x={90} y={28}>
-          Americas
-        </text>
-        <text className={styles.mapZoneLabel} x={420} y={28}>
-          Europe
-        </text>
-        <text className={styles.mapZoneLabel} x={720} y={28}>
-          Asia
-        </text>
-        <line
-          className={styles.mapZoneRule}
-          x1={280}
-          x2={280}
-          y1={40}
-          y2={270}
-        />
-        <line
-          className={styles.mapZoneRule}
-          x1={560}
-          x2={560}
-          y1={40}
-          y2={270}
-        />
-
-        {network.routes.map((route) => {
-          const from = projectLonLat(
-            route.fromLon,
-            route.fromLat,
-            WIDTH,
-            HEIGHT,
-          );
-          const to = projectLonLat(route.toLon, route.toLat, WIDTH, HEIGHT);
-          return (
-            <path
-              className={routeClass(route.activeSeverity, route.atRisk)}
-              d={curvedRoute(from, to)}
-              fill="none"
-              key={route.id}
-              markerEnd="url(#route-arrow)"
-            />
-          );
-        })}
-
-        {dest === null ? null : <HubMarker x={dest.x} y={dest.y} />}
-
-        {network.regions.map((region) => {
-          const point = projectLonLat(region.lon, region.lat, WIDTH, HEIGHT);
-          return (
-            <g key={region.regionCode}>
-              {region.activeSeverity === null ? null : (
-                <circle
-                  className={`${styles.mapRing} ${severityPinClass(region.activeSeverity)}`}
-                  cx={point.x}
-                  cy={point.y}
-                  r={12}
-                />
-              )}
-              <circle
-                className={`${styles.mapPin} ${severityPinClass(region.activeSeverity)}`}
-                cx={point.x}
-                cy={point.y}
-                r={6}
+        {dest === null ? null : (
+          <Marker coordinates={[dest.lon, dest.lat]}>
+            <g>
+              <rect
+                fill="#7B75E8"
+                height={12}
+                rx={1.5}
+                stroke="#FFFFFF"
+                strokeWidth={1.25}
+                transform="rotate(45)"
+                width={12}
+                x={-6}
+                y={-6}
               />
               <text
                 className={styles.mapLabel}
+                dominantBaseline="hanging"
                 textAnchor="middle"
-                x={point.x}
-                y={point.y - 16}
+                y={14}
               >
+                Destination
+              </text>
+            </g>
+          </Marker>
+        )}
+
+        {network.regions.map((region) => (
+          <Marker
+            coordinates={[region.lon, region.lat]}
+            key={region.regionCode}
+          >
+            <g>
+              {region.activeSeverity === null ? null : (
+                <circle
+                  cx={0}
+                  cy={0}
+                  fill={pinFill(region.activeSeverity)}
+                  fillOpacity={0.22}
+                  r={11}
+                />
+              )}
+              <circle
+                cx={0}
+                cy={0}
+                fill={pinFill(region.activeSeverity)}
+                r={5}
+                stroke="#FFFFFF"
+                strokeWidth={1.5}
+              />
+              <text className={styles.mapLabel} textAnchor="middle" y={-12}>
                 {region.label}
               </text>
             </g>
-          );
-        })}
-      </svg>
+          </Marker>
+        ))}
+      </ComposableMap>
       <div className={styles.mapLegend}>
         <span>
           <i className={`${styles.legendSwatch} ${styles.mapPinHigh}`} /> High
