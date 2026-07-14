@@ -23,9 +23,9 @@ describe("env", () => {
     );
     vi.stubEnv("TICK_SECRET", requiredEnv.TICK_SECRET);
 
-    const { env } = await import("@/lib/config/env");
+    const { getEnv } = await import("@/lib/config/env");
 
-    expect(env).toMatchObject(requiredEnv);
+    expect(getEnv()).toMatchObject(requiredEnv);
   });
 
   it("throws when a required value is missing", async () => {
@@ -37,6 +37,8 @@ describe("env", () => {
     );
     vi.stubEnv("TICK_SECRET", requiredEnv.TICK_SECRET);
 
-    await expect(import("@/lib/config/env")).rejects.toThrow();
+    const { getEnv } = await import("@/lib/config/env");
+
+    expect(getEnv).toThrow();
   });
 });

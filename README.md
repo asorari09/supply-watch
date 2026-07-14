@@ -1,4 +1,4 @@
-# Supply Disruption Response Agent
+# Sorai Supply Watch
 
 Supply-chain disruption monitoring that turns external signals into deterministic reorder decisions, then drafts supplier communications behind a human approval gate.
 
@@ -67,7 +67,7 @@ The build and automated validation runs spend **$0** on LLM calls: tests use fix
 
 ## Why this is different from Project 1
 
-| Dimension            | Project 1: PriorAuth Copilot             | This project: Supply Disruption Response Agent                      |
+| Dimension            | Project 1: PriorAuth Copilot             | This project: Sorai Supply Watch                                    |
 | -------------------- | ---------------------------------------- | ------------------------------------------------------------------- |
 | Execution model      | User request → response Q&A              | Scheduled/background ticks and dashboard state                      |
 | Inputs               | Static payer documents                   | Flaky weather and RSS/news sources                                  |

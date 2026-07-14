@@ -43,4 +43,19 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
-export const env: Env = envSchema.parse(process.env);
+let parsedEnv: Env | undefined;
+
+export const getEnv = (): Env => {
+  if (parsedEnv === undefined) parsedEnv = envSchema.parse(process.env);
+  return parsedEnv;
+};
+
+// Keep existing consumers lazy while preserving the `env.FIELD` call surface.
+export const env: Env = new Proxy({} as Env, {
+  get: (_target, property, receiver) =>
+    Reflect.get(getEnv(), property, receiver),
+  getOwnPropertyDescriptor: (_target, property) =>
+    Object.getOwnPropertyDescriptor(getEnv(), property),
+  has: (_target, property) => Reflect.has(getEnv(), property),
+  ownKeys: () => Reflect.ownKeys(getEnv()),
+});

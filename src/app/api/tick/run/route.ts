@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { getEnv } from "@/lib/config/env";
 import type { TickTriggerSource } from "@/lib/domain";
 import { systemClock } from "@/lib/runtime/clock";
 import { createRunContext } from "@/lib/runtime/run-context";
@@ -38,6 +39,7 @@ const requestTriggerSource = async (
 };
 
 export async function POST(request: Request): Promise<Response> {
+  getEnv();
   if (!verifyTickAuth(request)) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
