@@ -32,9 +32,19 @@ body {
 body {
   color: var(--ink);
   background: var(--canvas);
-  font-family: var(--font-geist-sans), Arial, sans-serif;
+  font-family:
+    var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+.topbar h1,
+.actionHeadline {
+  font-family:
+    var(--font-manrope), "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 * {
@@ -50,5 +60,5 @@ a {
 
 code,
 .tabular-nums {
-  font-family: var(--font-geist-mono), monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
