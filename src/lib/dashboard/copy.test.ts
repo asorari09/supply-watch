@@ -7,6 +7,7 @@ import {
   formatActionOrderTitle,
   formatActionSupportCompact,
   formatAffectedSummary,
+  formatDataViewLabel,
   formatDraftSubject,
   formatModeLabel,
   formatProjectedStock,
@@ -93,6 +94,8 @@ describe("dashboard copy helpers", () => {
       }),
     ).toBe("High: stock 93% below reorder point");
     expect(formatModeLabel("replay")).toBe("Simulation");
+    expect(formatDataViewLabel("live")).toBe("LIVE DATA");
+    expect(formatDataViewLabel("demo")).toBe("DEMO DATA - simulated scenario");
   });
 
   it("avoids impossible percentages for shortfall or >=100% gaps", () => {

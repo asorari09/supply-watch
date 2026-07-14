@@ -6,6 +6,7 @@ import { approveDraft, rejectDraft } from "@/lib/comms/approval";
 import { sendDraft } from "@/lib/comms/send";
 import { env } from "@/lib/config/env";
 import {
+  clearSyntheticDemoAndRefreshLive,
   injectSyntheticDisruption,
   type DemoInjectionSummary,
 } from "@/lib/dashboard/inject-demo";
@@ -17,6 +18,8 @@ export type DraftActionResult =
 
 export type InjectActionResult =
   { ok: true; summary: DemoInjectionSummary } | { ok: false; error: string };
+
+export type ClearDemoActionResult = { ok: true } | { ok: false; error: string };
 
 const revalidateDashboard = (): void => {
   revalidatePath("/dashboard");
@@ -101,6 +104,19 @@ export const injectDisruptionAction = async (): Promise<InjectActionResult> => {
     return {
       ok: false,
       error: "Unable to inject the synthetic demo scenario.",
+    };
+  }
+};
+
+export const clearDemoAction = async (): Promise<ClearDemoActionResult> => {
+  try {
+    await clearSyntheticDemoAndRefreshLive();
+    revalidateDashboard();
+    return { ok: true };
+  } catch {
+    return {
+      ok: false,
+      error: "Unable to clear demo data and return to live.",
     };
   }
 };

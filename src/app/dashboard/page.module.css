@@ -6,6 +6,56 @@
   width: 100%;
 }
 
+.dashboardDemo {
+  padding-top: 0;
+}
+
+.demoBanner {
+  align-items: center;
+  background: #fff6e5;
+  border-bottom: 1px solid #efd19a;
+  color: #8a5a00;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 0 -24px 14px;
+  padding: 10px 24px;
+}
+
+.demoBanner p {
+  flex: 1 1 auto;
+  font-size: 0.8rem;
+  font-weight: 650;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.demoBannerButton,
+.clearDemoButton {
+  background: #fff;
+  border: 1px solid #d9a84a;
+  border-radius: 6px;
+  color: #8a5a00;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+.demoBannerButton:disabled,
+.clearDemoButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.demoBannerMessage {
+  color: #8a5a00;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
 @keyframes consoleFade {
   from {
     opacity: 0;
@@ -53,6 +103,13 @@
   position: relative;
 }
 
+.injectButtonRow {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .injectButton {
   align-items: flex-start;
   background: var(--surface);
@@ -66,6 +123,10 @@
   gap: 2px;
   padding: 8px 12px;
   text-align: left;
+}
+
+.clearDemoButton {
+  align-self: center;
 }
 
 .injectButton > span {
@@ -98,29 +159,33 @@
 
 .modeBadge {
   align-items: center;
-  background: var(--accent-fill);
-  border: 1px solid #cfcbed;
   border-radius: 999px;
-  color: var(--accent-text);
   display: inline-flex;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 750;
   gap: 7px;
+  letter-spacing: 0.02em;
   padding: 7px 11px;
   white-space: nowrap;
 }
 
-.replay {
+.liveMode {
+  background: #eaf7ef;
+  border: 1px solid #b7dfc4;
+  color: #1f6b3a;
+}
+
+.demoMode {
   background: var(--warning-fill);
-  border-color: #f0d49a;
+  border: 1px solid #f0d49a;
   color: var(--warning-text);
 }
 
 .modeDot {
   background: currentColor;
   border-radius: 50%;
-  height: 6px;
-  width: 6px;
+  height: 7px;
+  width: 7px;
 }
 
 .kpiRow {

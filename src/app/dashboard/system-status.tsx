@@ -2,28 +2,29 @@
 
 import { useId, useState } from "react";
 
-import { formatModeLabel, formatTimeOnly } from "@/lib/dashboard/copy";
+import { formatDataViewLabel, formatTimeOnly } from "@/lib/dashboard/copy";
+import type { DataViewMode } from "@/lib/dashboard/demo-mode";
 import type { DashboardTick } from "@/lib/dashboard/load-dashboard";
 
 import styles from "./page.module.css";
 
 export const SystemStatus = ({
   ticks,
-  mode,
+  dataViewMode,
 }: {
   ticks: DashboardTick[];
-  mode: "live" | "replay";
+  dataViewMode: DataViewMode;
 }) => {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const latest = ticks[0];
-  const modeLabel = formatModeLabel(mode);
+  const modeLabel = formatDataViewLabel(dataViewMode);
 
   return (
     <div className={styles.systemStatusBar}>
       <span
         aria-hidden="true"
-        className={`${styles.systemDot} ${mode === "replay" ? styles.systemDotSim : ""}`}
+        className={`${styles.systemDot} ${dataViewMode === "demo" ? styles.systemDotSim : ""}`}
       />
       <span className={styles.systemModeLabel}>{modeLabel}</span>
       <button
@@ -46,7 +47,7 @@ export const SystemStatus = ({
           ) : (
             <ul>
               <li>Last checked: {formatTimeOnly(latest.clockNow)}</li>
-              <li>Monitoring: {modeLabel}</li>
+              <li>Data view: {modeLabel}</li>
             </ul>
           )}
         </div>

@@ -82,7 +82,7 @@ const selectDemoSuppliers = (
   return { routeSupplier, additionalSuppliers };
 };
 
-const clearPriorSyntheticScenario = async (
+export const clearPriorSyntheticScenario = async (
   client: SupabaseClient<Database>,
 ): Promise<void> => {
   const [currentSignals, legacySignals] = await Promise.all([
@@ -142,6 +142,24 @@ const clearPriorSyntheticScenario = async (
     .update({ status: "resolved" })
     .in("id", signalIds);
   requireSuccess(resolveSignalsError);
+};
+
+/**
+ * Remove synthetic demo cascade and recompute against remaining live signals.
+ * Does not delete or mutate non-synthetic (live) signals.
+ */
+export const clearSyntheticDemoAndRefreshLive = async (): Promise<void> => {
+  const client = createSupabaseAdminClient();
+  await clearPriorSyntheticScenario(client);
+  const context = createRunContext({ mode: "live", tickId: randomUUID() });
+  const assessment = await runAssessment(context, {
+    client,
+    enableNarration: false,
+  });
+  if (!assessment.ok)
+    throw new Error(
+      assessment.failure ?? "Live assessment failed after clearing demo data.",
+    );
 };
 
 export const injectSyntheticDisruption =

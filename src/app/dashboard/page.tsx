@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 
 import {
-  formatModeLabel,
+  formatDataViewLabel,
   formatMonitoringLine,
   severityRank,
 } from "@/lib/dashboard/copy";
+import type { DataViewMode } from "@/lib/dashboard/demo-mode";
 import {
   loadDashboard,
   type DashboardData,
@@ -12,7 +13,7 @@ import {
 } from "@/lib/dashboard/load-dashboard";
 
 import { ActionItems } from "./action-items";
-import { InjectDisruption } from "./inject-disruption";
+import { DemoBanner, InjectDisruption } from "./inject-disruption";
 import styles from "./page.module.css";
 import { PendingApprovals } from "./pending-approvals";
 import { RegionRiskMap } from "./region-risk-map";
@@ -31,12 +32,12 @@ const EmptyState = ({ children }: { children: React.ReactNode }) => (
   <p className={styles.emptyState}>{children}</p>
 );
 
-const ModeBadge = ({ mode }: { mode: "live" | "replay" }) => (
+const DataViewBadge = ({ mode }: { mode: DataViewMode }) => (
   <span
-    className={`${styles.modeBadge} ${mode === "replay" ? styles.replay : ""}`}
+    className={`${styles.modeBadge} ${mode === "demo" ? styles.demoMode : styles.liveMode}`}
   >
     <span aria-hidden="true" className={styles.modeDot} />
-    {formatModeLabel(mode)}
+    {formatDataViewLabel(mode)}
   </span>
 );
 
@@ -98,7 +99,7 @@ const MonitoringRow = ({ risk }: { risk: DashboardRisk }) => (
 
 export default async function DashboardPage() {
   const data = await loadDashboard();
-  const mode = data.ticks[0]?.mode ?? "live";
+  const dataViewMode = data.dataViewMode;
   const actionRisks = data.risks
     .filter((risk) => (risk.recommendedQty ?? 0) > 0)
     .sort(
@@ -110,12 +111,15 @@ export default async function DashboardPage() {
   );
 
   return (
-    <main className={styles.dashboard}>
+    <main
+      className={`${styles.dashboard} ${dataViewMode === "demo" ? styles.dashboardDemo : ""}`}
+    >
+      <DemoBanner dataViewMode={dataViewMode} />
       <header className={styles.topbar}>
         <h1>Supply Risk Console</h1>
         <div className={styles.headerControls}>
-          <InjectDisruption />
-          <ModeBadge mode={mode} />
+          <InjectDisruption dataViewMode={dataViewMode} />
+          <DataViewBadge mode={dataViewMode} />
         </div>
       </header>
 
@@ -169,7 +173,7 @@ export default async function DashboardPage() {
           <AlertsPanel alerts={data.alerts} />
         </div>
         <div className={styles.supportingNote}>
-          <SystemStatus ticks={data.ticks} mode={mode} />
+          <SystemStatus ticks={data.ticks} dataViewMode={dataViewMode} />
         </div>
       </section>
     </main>

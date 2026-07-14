@@ -75,6 +75,9 @@ export const formatSignalSource = (source: "weather" | "news"): string =>
 export const formatModeLabel = (mode: "live" | "replay"): string =>
   mode === "live" ? "Live" : "Simulation";
 
+export const formatDataViewLabel = (mode: "live" | "demo"): string =>
+  mode === "demo" ? "DEMO DATA - simulated scenario" : "LIVE DATA";
+
 /** Inventory position (on-hand + on-order − backorders). Negative → shortfall phrasing. */
 export const formatProjectedStock = (
   inventoryPosition: number | null,

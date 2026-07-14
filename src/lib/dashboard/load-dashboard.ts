@@ -1,6 +1,10 @@
 import "server-only";
 
 import {
+  detectDataViewMode,
+  type DataViewMode,
+} from "@/lib/dashboard/demo-mode";
+import {
   buildActiveSeverityByRegion,
   buildKpis,
   buildNetworkModel,
@@ -77,6 +81,8 @@ export interface DashboardData {
   kpis: DashboardKpis;
   network: DashboardNetwork;
   severityBreakdown: DashboardSeverityBreakdown;
+  /** Derived from synthetic markers in the DB, not a click-local flag. */
+  dataViewMode: DataViewMode;
 }
 
 const emptyNetwork = (): DashboardNetwork => ({
@@ -104,6 +110,7 @@ const emptyDashboardData = (): DashboardData => ({
   },
   network: emptyNetwork(),
   severityBreakdown: { high: 0, med: 0, low: 0, unknown: 0 },
+  dataViewMode: "live",
 });
 
 export const loadDashboard = async (): Promise<DashboardData> => {
@@ -189,6 +196,18 @@ export const loadDashboard = async (): Promise<DashboardData> => {
         signal,
       ]),
     );
+    const dataViewMode = detectDataViewMode({
+      activeSignals: activeSignalRows.map((signal) => ({
+        dedupeHash: signal.dedupe_hash,
+      })),
+      openFlags: flagRows.map((flag) => ({ signalId: flag.signal_id })),
+      signalById: new Map(
+        [...signalById.entries()].map(([id, signal]) => [
+          id,
+          { dedupeHash: signal.dedupe_hash },
+        ]),
+      ),
+    });
     const skuById = new Map(skuRows.map((sku) => [sku.id, sku]));
     const supplierById = new Map(
       supplierRows.map((supplier) => [supplier.id, supplier]),
@@ -398,6 +417,7 @@ export const loadDashboard = async (): Promise<DashboardData> => {
       }),
       network,
       severityBreakdown: buildSeverityBreakdown(risks),
+      dataViewMode,
     };
   } catch {
     return emptyDashboardData();
