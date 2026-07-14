@@ -1,7 +1,9 @@
+import { createNewsLlmClient } from "@/lib/adapters/llm/client";
 import { createRssClient, getNewsFeeds } from "@/lib/adapters/news/client";
 import type { NewsClient, NewsClientSuccess } from "@/lib/adapters/news/client";
-import { mapItemsToSignals } from "@/lib/adapters/news/map";
+import { mapItemsToSignalsWithOptionalLlm } from "@/lib/adapters/news/map";
 import type { SignalAdapter, SignalAdapterResult } from "@/lib/adapters/types";
+import { env } from "@/lib/config/env";
 import type { RunContext } from "@/lib/runtime/run-context";
 
 export interface RssNewsAdapterOptions {
@@ -47,9 +49,16 @@ export class RssNewsAdapter implements SignalAdapter {
         };
       }
 
-      const signals = successfulResults.flatMap(({ result }) =>
-        mapItemsToSignals(result.items, ctx),
+      const mapping = await mapItemsToSignalsWithOptionalLlm(
+        successfulResults.flatMap(({ result }) => result.items),
+        ctx,
+        {
+          enableLlm: env.ENABLE_LLM_NEWS,
+          maxLlm: env.MAX_NEWS_LLM_PER_TICK,
+          llmClient: createNewsLlmClient(),
+        },
       );
+      const signals = mapping.signals;
       const degraded =
         successfulResults.length !== results.length ||
         signals.some((signal) => signal.status === "degraded");

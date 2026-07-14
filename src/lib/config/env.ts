@@ -11,6 +11,13 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().trim().min(1),
   TICK_SECRET: z.string().trim().min(32),
   OPENAI_API_KEY: optionalNonEmptyString,
+  ENABLE_LLM_NEWS: z
+    .preprocess((value) => value === "true", z.boolean())
+    .default(false),
+  MAX_NEWS_LLM_PER_TICK: z.coerce.number().int().positive().default(3),
+  LANGFUSE_PUBLIC_KEY: optionalNonEmptyString,
+  LANGFUSE_SECRET_KEY: optionalNonEmptyString,
+  LANGFUSE_BASE_URL: optionalNonEmptyString,
   ANTHROPIC_API_KEY: optionalNonEmptyString,
   LLM_MODEL_NEWS: optionalNonEmptyString,
   LLM_MODEL_NARRATION: optionalNonEmptyString,
