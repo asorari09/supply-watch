@@ -31,3 +31,37 @@ export const findCommsDrafts = async (
   if (error) throw new Error(error.message);
   return data;
 };
+
+export const findCommsDraftById = async (
+  client: SupabaseClient<Database>,
+  draftId: string,
+) => {
+  const { data, error } = await client
+    .from("comms_drafts")
+    .select()
+    .eq("id", draftId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+export const transitionCommsDraftStatus = async (
+  client: SupabaseClient<Database>,
+  draftId: string,
+  from: Database["public"]["Enums"]["comms_draft_status"],
+  to: Database["public"]["Enums"]["comms_draft_status"],
+  sentAt?: string,
+) => {
+  const { data, error } = await client
+    .from("comms_drafts")
+    .update({
+      status: to,
+      ...(sentAt === undefined ? {} : { sent_at: sentAt }),
+    })
+    .eq("id", draftId)
+    .eq("status", from)
+    .select()
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data;
+};

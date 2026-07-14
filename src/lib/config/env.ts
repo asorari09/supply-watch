@@ -23,6 +23,10 @@ const envSchema = z.object({
     .preprocess((value) => value === "true", z.boolean())
     .default(false),
   MAX_DRAFTS_PER_TICK: z.coerce.number().int().positive().default(5),
+  ENABLE_REAL_SEND: z
+    .preprocess((value) => value === "true", z.boolean())
+    .default(false),
+  APPROVER_NAME: optionalNonEmptyString,
   LANGFUSE_PUBLIC_KEY: optionalNonEmptyString,
   LANGFUSE_SECRET_KEY: optionalNonEmptyString,
   LANGFUSE_BASE_URL: optionalNonEmptyString,
