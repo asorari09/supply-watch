@@ -47,12 +47,6 @@ export const SystemStatus = ({
             <ul>
               <li>Last checked: {formatTimeOnly(latest.clockNow)}</li>
               <li>Monitoring: {modeLabel}</li>
-              <li>
-                External AI cost: $
-                {latest.estimatedCostUsd.toFixed(
-                  latest.estimatedCostUsd === 0 ? 0 : 4,
-                )}
-              </li>
             </ul>
           )}
         </div>
