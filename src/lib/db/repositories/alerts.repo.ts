@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/db/database.types";
 export const upsertAlerts = async (
-  client: SupabaseClient<Database>,
+  client: SupabaseClient<Database, "public" | "eval">,
   rows: Database["public"]["Tables"]["alerts"]["Insert"][],
 ) => {
   const { data, error } = await client

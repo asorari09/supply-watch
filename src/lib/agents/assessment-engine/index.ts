@@ -9,6 +9,7 @@ import { correlate } from "@/lib/agents/assessment-engine/correlate";
 import { narrateAssessment } from "@/lib/agents/assessment-engine/narrate";
 import { env } from "@/lib/config/env";
 import type { Database } from "@/lib/db/database.types";
+import { toAssessmentInput } from "@/lib/db/mappers/assessment-input.mapper";
 import { upsertAlerts } from "@/lib/db/repositories/alerts.repo";
 import { upsertReorderRecommendations } from "@/lib/db/repositories/reorder-recommendations.repo";
 import { upsertRiskFlags } from "@/lib/db/repositories/risk-flags.repo";
@@ -17,7 +18,7 @@ import type { RunContext } from "@/lib/runtime/run-context";
 export const runAssessment = async (
   ctx: RunContext,
   deps: {
-    client: SupabaseClient<Database>;
+    client: SupabaseClient<Database, "public" | "eval">;
     llmClient?: LlmCompletionClient | undefined;
     enableNarration?: boolean | undefined;
     maxNarration?: number | undefined;
@@ -32,12 +33,14 @@ export const runAssessment = async (
     ]);
     if (signals.error || suppliers.error || skus.error || shipments.error)
       throw new Error("Assessment database load failed.");
-    const correlation = correlate({
-      signals: signals.data as never,
-      suppliers: suppliers.data as never,
-      skus: skus.data as never,
-      shipments: shipments.data as never,
-    });
+    const correlation = correlate(
+      toAssessmentInput({
+        signals: signals.data,
+        suppliers: suppliers.data,
+        skus: skus.data,
+        shipments: shipments.data,
+      }),
+    );
     const result = assess({
       correlation,
       horizonBase: ctx.clock.now().toISOString(),

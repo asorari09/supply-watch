@@ -534,6 +534,14 @@ export type Database = {
       [_ in never]: never
     }
   }
+  eval: Omit<Database["public"], "Functions"> & {
+    Functions: Database["public"]["Functions"] & {
+      reset_all: {
+        Args: Record<never, never>
+        Returns: undefined
+      }
+    }
+  }
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">

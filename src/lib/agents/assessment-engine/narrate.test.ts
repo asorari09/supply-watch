@@ -118,9 +118,11 @@ const context = {
 
 const databaseClient = {
   from: vi.fn(() => ({
-    select: vi.fn(() => ({
-      eq: vi.fn(async () => ({ data: [], error: null })),
-    })),
+    select: vi.fn(() =>
+      Object.assign(Promise.resolve({ data: [], error: null }), {
+        eq: vi.fn(async () => ({ data: [], error: null })),
+      }),
+    ),
     update: vi.fn(() => ({ eq: vi.fn(async () => ({ error: null })) })),
   })),
 };

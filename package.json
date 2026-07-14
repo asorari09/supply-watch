@@ -17,7 +17,7 @@
     "test:watch": "vitest --exclude '**/*.integration.test.ts'",
     "test:run": "vitest run --exclude '**/*.integration.test.ts'",
     "evals:report": "tsx src/evals/metrics.ts",
-    "test:integration": "dotenv -e .env -- vitest run src/lib/agents/signal-monitor/signal-monitor.integration.test.ts",
+    "test:integration": "dotenv -e .env -- vitest run --dir src --config vitest.config.ts integration.test",
     "prepare": "husky",
     "db:push": "dotenv -e .env -- supabase db push",
     "db:types": "supabase gen types typescript --linked > src/lib/db/database.types.ts",
