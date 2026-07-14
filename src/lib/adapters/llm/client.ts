@@ -38,6 +38,9 @@ export const createCommsLlmClient = (): LlmCompletionClient | undefined =>
     : new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
 const createLangfuse = (): Langfuse | undefined => {
+  // Only emit traces when the news LLM surface is explicitly enabled.
+  // Keeps offline tests and default ticks at $0 with no network flush.
+  if (!env.ENABLE_LLM_NEWS) return undefined;
   if (
     env.LANGFUSE_PUBLIC_KEY === undefined ||
     env.LANGFUSE_SECRET_KEY === undefined
