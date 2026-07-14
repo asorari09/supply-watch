@@ -1,5 +1,14 @@
 import "server-only";
 
+import {
+  buildActiveSeverityByRegion,
+  buildKpis,
+  buildNetworkModel,
+  buildSeverityBreakdown,
+  type DashboardKpis,
+  type DashboardNetwork,
+  type DashboardSeverityBreakdown,
+} from "@/lib/dashboard/map-model";
 import { createSupabaseAdminClient } from "@/lib/db/admin-client";
 
 export interface DashboardSignal {
@@ -25,6 +34,7 @@ export interface DashboardRisk {
   rop: number | null;
   inventoryPosition: number | null;
   recommendedQty: number | null;
+  supplierRegion: string | null;
 }
 
 export interface DashboardDraft {
@@ -64,7 +74,20 @@ export interface DashboardData {
   drafts: DashboardDraft[];
   alerts: DashboardAlert[];
   ticks: DashboardTick[];
+  kpis: DashboardKpis;
+  network: DashboardNetwork;
+  severityBreakdown: DashboardSeverityBreakdown;
 }
+
+const emptyNetwork = (): DashboardNetwork => ({
+  regions: [],
+  routes: [],
+  destination: null,
+  healthyRegionCount: 0,
+  totalRegionCount: 0,
+  networkHealthPercent: 100,
+  disruptedRouteCount: 0,
+});
 
 const emptyDashboardData = (): DashboardData => ({
   signals: [],
@@ -72,13 +95,23 @@ const emptyDashboardData = (): DashboardData => ({
   drafts: [],
   alerts: [],
   ticks: [],
+  kpis: {
+    skusAtRisk: 0,
+    needsReorder: 0,
+    awaitingApproval: 0,
+    readyToSend: 0,
+    activeDisruptions: 0,
+  },
+  network: emptyNetwork(),
+  severityBreakdown: { high: 0, med: 0, low: 0, unknown: 0 },
 });
 
 export const loadDashboard = async (): Promise<DashboardData> => {
   try {
     const client = createSupabaseAdminClient();
     const [
-      signals,
+      feedSignals,
+      activeSignals,
       flags,
       recommendations,
       drafts,
@@ -86,18 +119,19 @@ export const loadDashboard = async (): Promise<DashboardData> => {
       ticks,
       skus,
       suppliers,
+      shipments,
     ] = await Promise.all([
       client
         .from("signals")
         .select()
         .order("detected_at", { ascending: false })
         .limit(12),
+      client.from("signals").select().eq("status", "active"),
       client
         .from("risk_flags")
         .select()
         .eq("status", "open")
-        .order("created_at", { ascending: false })
-        .limit(12),
+        .order("created_at", { ascending: false }),
       client
         .from("reorder_recommendations")
         .select()
@@ -121,9 +155,11 @@ export const loadDashboard = async (): Promise<DashboardData> => {
         .limit(8),
       client.from("skus").select(),
       client.from("suppliers").select(),
+      client.from("shipments").select(),
     ]);
     const responses = [
-      signals,
+      feedSignals,
+      activeSignals,
       flags,
       recommendations,
       drafts,
@@ -131,11 +167,13 @@ export const loadDashboard = async (): Promise<DashboardData> => {
       ticks,
       skus,
       suppliers,
+      shipments,
     ];
     if (responses.some((response) => response.error !== null))
       return emptyDashboardData();
 
-    const signalRows = signals.data ?? [];
+    const feedSignalRows = feedSignals.data ?? [];
+    const activeSignalRows = activeSignals.data ?? [];
     const flagRows = flags.data ?? [];
     const recommendationRows = recommendations.data ?? [];
     const draftRows = drafts.data ?? [];
@@ -143,13 +181,18 @@ export const loadDashboard = async (): Promise<DashboardData> => {
     const tickRows = ticks.data ?? [];
     const skuRows = skus.data ?? [];
     const supplierRows = suppliers.data ?? [];
+    const shipmentRows = shipments.data ?? [];
 
-    const signalById = new Map(signalRows.map((signal) => [signal.id, signal]));
+    const signalById = new Map(
+      [...feedSignalRows, ...activeSignalRows].map((signal) => [
+        signal.id,
+        signal,
+      ]),
+    );
     const skuById = new Map(skuRows.map((sku) => [sku.id, sku]));
     const supplierById = new Map(
       supplierRows.map((supplier) => [supplier.id, supplier]),
     );
-    // Rows are newest-first; keep the first write so lookups resolve to the latest.
     const recommendationByFlagId = new Map<
       string,
       (typeof recommendationRows)[number]
@@ -221,16 +264,8 @@ export const loadDashboard = async (): Promise<DashboardData> => {
       }
     }
 
-    return {
-      signals: signalRows.map((signal) => ({
-        id: signal.id,
-        source: signal.source,
-        regions: signal.affected_regions,
-        severity: signal.severity,
-        status: signal.status,
-        detectedAt: signal.detected_at,
-      })),
-      risks: [...flagsBySkuId.entries()].map(([skuId, skuFlags]) => {
+    const risks: DashboardRisk[] = [...flagsBySkuId.entries()].map(
+      ([skuId, skuFlags]) => {
         const directRecommendation = skuFlags
           .map((flag) => recommendationByFlagId.get(flag.id))
           .find((recommendation) => recommendation !== undefined);
@@ -239,10 +274,15 @@ export const loadDashboard = async (): Promise<DashboardData> => {
         const sku = skuById.get(skuId);
         const supplier =
           sku === undefined ? undefined : supplierById.get(sku.supplier_id);
-        const severityRank = { unknown: 0, low: 1, med: 2, high: 3 } as const;
+        const severityRankMap = {
+          unknown: 0,
+          low: 1,
+          med: 2,
+          high: 3,
+        } as const;
         const severity = skuFlags.reduce(
           (highest, flag) =>
-            severityRank[flag.severity] > severityRank[highest]
+            severityRankMap[flag.severity] > severityRankMap[highest]
               ? flag.severity
               : highest,
           skuFlags[0]?.severity ?? "unknown",
@@ -273,25 +313,62 @@ export const loadDashboard = async (): Promise<DashboardData> => {
           rop: recommendation?.rop ?? null,
           inventoryPosition: recommendation?.inventory_position ?? null,
           recommendedQty: recommendation?.recommended_qty ?? null,
+          supplierRegion: supplier?.region_code ?? null,
         };
-      }),
-      drafts: draftRows.map((draft) => {
-        const recommendation = recommendationById.get(draft.recommendation_id);
-        const flag = flagById.get(draft.risk_flag_id);
-        const sku = flag === undefined ? undefined : skuById.get(flag.sku_id);
-        return {
-          id: draft.id,
-          subject: draft.subject,
-          body: editedBodyByDraftId.get(draft.id) ?? draft.body,
-          tone: draft.tone,
-          status: draft.status,
-          sku: sku?.sku ?? "Linked SKU unavailable",
-          ss: recommendation?.ss ?? null,
-          rop: recommendation?.rop ?? null,
-          inventoryPosition: recommendation?.inventory_position ?? null,
-          recommendedQty: recommendation?.recommended_qty ?? null,
-        };
-      }),
+      },
+    );
+
+    const draftsMapped = draftRows.map((draft) => {
+      const recommendation = recommendationById.get(draft.recommendation_id);
+      const flag = flagById.get(draft.risk_flag_id);
+      const sku = flag === undefined ? undefined : skuById.get(flag.sku_id);
+      return {
+        id: draft.id,
+        subject: draft.subject,
+        body: editedBodyByDraftId.get(draft.id) ?? draft.body,
+        tone: draft.tone,
+        status: draft.status,
+        sku: sku?.sku ?? "Linked SKU unavailable",
+        ss: recommendation?.ss ?? null,
+        rop: recommendation?.rop ?? null,
+        inventoryPosition: recommendation?.inventory_position ?? null,
+        recommendedQty: recommendation?.recommended_qty ?? null,
+      };
+    });
+
+    const activeSeverityByRegion = buildActiveSeverityByRegion(
+      activeSignalRows.map((signal) => ({
+        affectedRegions: signal.affected_regions,
+        severity: signal.severity,
+      })),
+    );
+    const network = buildNetworkModel({
+      suppliers: supplierRows.map((supplier) => ({
+        id: supplier.id,
+        regionCode: supplier.region_code,
+        geo: supplier.geo,
+      })),
+      shipments: shipmentRows.map((shipment) => ({
+        id: shipment.id,
+        supplierId: shipment.supplier_id,
+        originGeo: shipment.origin_geo,
+        destGeo: shipment.dest_geo,
+        routeRegions: shipment.route_regions,
+      })),
+      activeSeverityByRegion,
+    });
+
+    return {
+      signals: feedSignalRows.map((signal) => ({
+        id: signal.id,
+        source: signal.source,
+        regions: signal.affected_regions,
+        severity: signal.severity,
+        status: signal.status,
+        detectedAt: signal.detected_at,
+      })),
+      risks,
+      drafts: draftsMapped,
       alerts: alertRows.map((alert) => {
         const flag = flagById.get(alert.risk_flag_id);
         return {
@@ -314,6 +391,13 @@ export const loadDashboard = async (): Promise<DashboardData> => {
         estimatedCostUsd: tick.est_cost_usd,
         clockNow: tick.clock_now,
       })),
+      kpis: buildKpis({
+        risks,
+        drafts: draftsMapped,
+        activeDisruptionCount: activeSignalRows.length,
+      }),
+      network,
+      severityBreakdown: buildSeverityBreakdown(risks),
     };
   } catch {
     return emptyDashboardData();
