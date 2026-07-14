@@ -91,4 +91,28 @@ describe("dashboard copy helpers", () => {
     ).toBe("High: stock 93% below reorder point");
     expect(formatModeLabel("replay")).toBe("Simulation");
   });
+
+  it("avoids impossible percentages for shortfall or >=100% gaps", () => {
+    expect(
+      formatSeverityBasis({
+        severity: "high",
+        inventoryPosition: -380,
+        rop: 1404,
+      }),
+    ).toBe("High: stock below zero, 380 units shortfall");
+    expect(
+      formatSeverityBasis({
+        severity: "med",
+        inventoryPosition: 0,
+        rop: 250,
+      }),
+    ).toBe("Medium: stock in shortfall, 250 units past reorder point");
+    expect(
+      formatSeverityBasis({
+        severity: "low",
+        inventoryPosition: 200,
+        rop: 100,
+      }),
+    ).toBe("Low: stock 100% above reorder point");
+  });
 });

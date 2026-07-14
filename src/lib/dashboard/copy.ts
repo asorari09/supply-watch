@@ -199,7 +199,8 @@ export const formatActionMetricsInline = (input: {
 
 /**
  * Display-only basis for rule-based severity using (ROP - IP) / ROP.
- * Does not change assessment math.
+ * Does not change assessment math. Percentages are only shown when stock is
+ * positive and strictly under ROP (0 < pct < 100); shortfalls use unit counts.
  */
 export const formatSeverityBasis = (input: {
   severity: "low" | "med" | "high" | "unknown";
@@ -209,11 +210,23 @@ export const formatSeverityBasis = (input: {
   const label = formatSeverityLabel(input.severity);
   if (input.inventoryPosition === null || input.rop === null || input.rop === 0)
     return `${label}: stock vs reorder unavailable`;
-  const gapRatio = (input.rop - input.inventoryPosition) / input.rop;
-  const pct = Math.round(Math.abs(gapRatio) * 100);
-  if (gapRatio > 0) return `${label}: stock ${pct}% below reorder point`;
-  if (gapRatio < 0) return `${label}: stock ${pct}% above reorder point`;
-  return `${label}: stock at reorder point`;
+  const ip = input.inventoryPosition;
+  const rop = input.rop;
+  const gap = rop - ip;
+  if (gap === 0) return `${label}: stock at reorder point`;
+  if (gap < 0) {
+    const pct = Math.round((-gap / rop) * 100);
+    return `${label}: stock ${pct}% above reorder point`;
+  }
+  const pct = Math.round((gap / rop) * 100);
+  if (ip < 0) {
+    const units = Math.abs(ip);
+    return `${label}: stock below zero, ${units} unit${units === 1 ? "" : "s"} shortfall`;
+  }
+  if (pct > 0 && pct < 100) {
+    return `${label}: stock ${pct}% below reorder point`;
+  }
+  return `${label}: stock in shortfall, ${gap} unit${gap === 1 ? "" : "s"} past reorder point`;
 };
 
 export const formatMonitoringLine = (input: {
