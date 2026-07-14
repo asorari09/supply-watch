@@ -95,10 +95,10 @@ export const runAssessment = async (
         level: alert.level,
         message_template:
           alert.level === "critical"
-            ? "Critical shortfall — IP well below adjusted ROP"
+            ? "Critical shortfall - IP well below adjusted ROP"
             : alert.level === "warning"
-              ? "Warning — IP below adjusted ROP"
-              : "Info — IP crossed reorder threshold",
+              ? "Warning - IP below adjusted ROP"
+              : "Info - IP crossed reorder threshold",
         created_at: createdAt,
         delivered_via: "dashboard",
       })),

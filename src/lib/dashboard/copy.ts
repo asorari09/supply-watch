@@ -73,7 +73,7 @@ export const formatSignalSource = (source: "weather" | "news"): string =>
   source === "weather" ? "Weather" : "News";
 
 export const formatModeLabel = (mode: "live" | "replay"): string =>
-  mode === "live" ? "Live" : "Demo";
+  mode === "live" ? "Live" : "Simulation";
 
 /** Inventory position (on-hand + on-order − backorders). Negative → shortfall phrasing. */
 export const formatProjectedStock = (
@@ -88,7 +88,7 @@ export const formatProjectedStock = (
 export const formatProjectedStockShort = (
   inventoryPosition: number | null,
 ): string => {
-  if (inventoryPosition === null) return "—";
+  if (inventoryPosition === null) return "-";
   if (inventoryPosition < 0) return `Shortfall ${Math.abs(inventoryPosition)}`;
   return String(inventoryPosition);
 };
@@ -110,10 +110,10 @@ export const formatAlertMessage = (input: {
 }): string => {
   const product = input.sku ?? "this product";
   if (input.level === "critical")
-    return `Critical — stock may run short for ${product}`;
+    return `Critical: stock may run short for ${product}`;
   if (input.level === "warning")
-    return `Warning — stock is tight for ${product}`;
-  return `Watch — reorder threshold crossed for ${product}`;
+    return `Warning: stock is tight for ${product}`;
+  return `Watch: reorder threshold crossed for ${product}`;
 };
 
 export const formatActionHeadline = (input: {
@@ -121,15 +121,15 @@ export const formatActionHeadline = (input: {
   recommendedQty: number | null;
   severity: "low" | "med" | "high" | "unknown";
 }): string => {
-  const qty = input.recommendedQty ?? "—";
+  const qty = input.recommendedQty ?? "-";
   const warn =
     input.severity === "high" || input.severity === "med" ? "⚠ " : "";
   return `${warn}Order ${qty} units of ${input.sku}`;
 };
 
-/** Dense row title — qty only; SKU lives in its own column. */
+/** Dense row title: qty only; SKU lives in its own column. */
 export const formatActionOrderTitle = (recommendedQty: number | null): string =>
-  `Order ${recommendedQty ?? "—"} units`;
+  `Order ${recommendedQty ?? "-"} units`;
 
 export const formatActionSupport = (input: {
   disruptionTypes: readonly string[];
@@ -163,7 +163,7 @@ export const formatActionSupport = (input: {
 
 /**
  * Compact one-line reason for dense action rows.
- * Same fields as formatActionSupport — numbers always rendered, prose condensed.
+ * Same fields as formatActionSupport: numbers always rendered, prose condensed.
  */
 export const formatActionSupportCompact = (input: {
   disruptionTypes: readonly string[];
@@ -182,11 +182,11 @@ export const formatActionSupportCompact = (input: {
       : `lead time ${input.leadTimeBase}→${input.leadTimeBase + input.leadTimeDelta}d`;
   const stock =
     input.inventoryPosition === null
-      ? "stock —"
+      ? "stock -"
       : input.inventoryPosition < 0
         ? `stock shortfall ${Math.abs(input.inventoryPosition)}`
         : `stock ${input.inventoryPosition}`;
-  const reorder = input.rop === null ? "reorder —" : `reorder ${input.rop}`;
+  const reorder = input.rop === null ? "reorder -" : `reorder ${input.rop}`;
   return `${disruption} · ${lead} · ${stock} vs ${reorder}`;
 };
 
@@ -195,7 +195,26 @@ export const formatActionMetricsInline = (input: {
   rop: number | null;
   inventoryPosition: number | null;
 }): string =>
-  `SS ${input.ss ?? "—"} · ROP ${input.rop ?? "—"} · Stock ${formatProjectedStockShort(input.inventoryPosition)}`;
+  `SS ${input.ss ?? "-"} · ROP ${input.rop ?? "-"} · Stock ${formatProjectedStockShort(input.inventoryPosition)}`;
+
+/**
+ * Display-only basis for rule-based severity using (ROP - IP) / ROP.
+ * Does not change assessment math.
+ */
+export const formatSeverityBasis = (input: {
+  severity: "low" | "med" | "high" | "unknown";
+  inventoryPosition: number | null;
+  rop: number | null;
+}): string => {
+  const label = formatSeverityLabel(input.severity);
+  if (input.inventoryPosition === null || input.rop === null || input.rop === 0)
+    return `${label}: stock vs reorder unavailable`;
+  const gapRatio = (input.rop - input.inventoryPosition) / input.rop;
+  const pct = Math.round(Math.abs(gapRatio) * 100);
+  if (gapRatio > 0) return `${label}: stock ${pct}% below reorder point`;
+  if (gapRatio < 0) return `${label}: stock ${pct}% above reorder point`;
+  return `${label}: stock at reorder point`;
+};
 
 export const formatMonitoringLine = (input: {
   sku: string;
@@ -207,7 +226,7 @@ export const formatMonitoringLine = (input: {
       : formatDisruptionType(
           input.disruptionTypes[0] ?? "disruption",
         ).toLowerCase();
-  return `${input.sku} — Exposed to ${disruption}, but current stock covers the reorder point. No action needed.`;
+  return `${input.sku}: Exposed to ${disruption}, but current stock covers the reorder point. No action needed.`;
 };
 
 export const severityRank = (

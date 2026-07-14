@@ -8,15 +8,14 @@ import {
   formatExposureType,
   formatModeLabel,
   formatMonitoringLine,
+  formatSeverityBasis,
   formatSeverityLabel,
-  formatTimeOnly,
   severityRank,
 } from "@/lib/dashboard/copy";
 import {
   loadDashboard,
   type DashboardData,
   type DashboardRisk,
-  type DashboardTick,
 } from "@/lib/dashboard/load-dashboard";
 
 import { InjectDisruption } from "./inject-disruption";
@@ -25,6 +24,7 @@ import { PendingApprovals } from "./pending-approvals";
 import { RegionRiskMap } from "./region-risk-map";
 import { SeverityDonut } from "./severity-donut";
 import { AlertsPanel, WhatsHappeningPanel } from "./supporting-panels";
+import { SystemStatus } from "./system-status";
 
 export const metadata: Metadata = {
   title: "Supply Risk Console",
@@ -121,15 +121,24 @@ const ActionRow = ({ risk }: { risk: DashboardRisk }) => {
       <strong className={styles.actionOrder}>
         {formatActionOrderTitle(risk.recommendedQty)}
       </strong>
-      <p className={styles.actionReason}>
-        {formatActionSupportCompact({
-          disruptionTypes: risk.disruptionTypes,
-          leadTimeBase: risk.leadTimeBase,
-          leadTimeDelta: risk.leadTimeDelta,
-          inventoryPosition: risk.inventoryPosition,
-          rop: risk.rop,
-        })}
-      </p>
+      <div className={styles.actionReasonCell}>
+        <p className={styles.actionReason}>
+          {formatActionSupportCompact({
+            disruptionTypes: risk.disruptionTypes,
+            leadTimeBase: risk.leadTimeBase,
+            leadTimeDelta: risk.leadTimeDelta,
+            inventoryPosition: risk.inventoryPosition,
+            rop: risk.rop,
+          })}
+        </p>
+        <p className={styles.actionBasis}>
+          {formatSeverityBasis({
+            severity: risk.severity,
+            inventoryPosition: risk.inventoryPosition,
+            rop: risk.rop,
+          })}
+        </p>
+      </div>
       <p className={styles.actionMetrics}>
         {formatActionMetricsInline({
           ss: risk.ss,
@@ -172,34 +181,6 @@ const MonitoringRow = ({ risk }: { risk: DashboardRisk }) => (
     </span>
   </li>
 );
-
-const SystemStatus = ({
-  ticks,
-  mode,
-}: {
-  ticks: DashboardTick[];
-  mode: "live" | "replay";
-}) => {
-  const latest = ticks[0];
-  if (latest === undefined) {
-    return (
-      <p className={styles.systemStatus}>
-        <strong>System status:</strong> Waiting for the first check.
-      </p>
-    );
-  }
-  const costNote =
-    latest.estimatedCostUsd === 0
-      ? " · $0 — no external AI cost"
-      : ` · External AI cost $${latest.estimatedCostUsd.toFixed(4)}`;
-  return (
-    <p className={styles.systemStatus}>
-      <strong>System status:</strong> Last checked{" "}
-      {formatTimeOnly(latest.clockNow)} · Monitoring {formatModeLabel(mode)}
-      {costNote}
-    </p>
-  );
-};
 
 export default async function DashboardPage() {
   const data = await loadDashboard();
@@ -263,7 +244,7 @@ export default async function DashboardPage() {
           <div className={styles.sectionTitle}>
             <div>
               <p className={styles.eyebrow}>Watchlist</p>
-              <h2 id="monitoring-title">Monitoring — no action needed</h2>
+              <h2 id="monitoring-title">Monitoring: no action needed</h2>
             </div>
             <span>{monitoringRisks.length} items</span>
           </div>

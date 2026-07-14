@@ -5,8 +5,10 @@ import {
   formatActionMetricsInline,
   formatActionOrderTitle,
   formatActionSupportCompact,
+  formatModeLabel,
   formatProjectedStock,
   formatRegionLabel,
+  formatSeverityBasis,
   formatSignalStatus,
 } from "@/lib/dashboard/copy";
 
@@ -77,5 +79,16 @@ describe("dashboard copy helpers", () => {
         inventoryPosition: 105,
       }),
     ).toBe("SS 264 · ROP 1404 · Stock 105");
+  });
+
+  it("formats deterministic severity basis from stock gap vs reorder point", () => {
+    expect(
+      formatSeverityBasis({
+        severity: "high",
+        inventoryPosition: 105,
+        rop: 1404,
+      }),
+    ).toBe("High: stock 93% below reorder point");
+    expect(formatModeLabel("replay")).toBe("Simulation");
   });
 });

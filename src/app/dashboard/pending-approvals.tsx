@@ -45,10 +45,10 @@ const DraftControls = ({ draft }: { draft: PendingApprovalDraft }) => {
         setEditing(false);
         setMessage(
           result.status === "sent"
-            ? "Sent — demo delivery logged."
+            ? "Sent - demo delivery logged."
             : result.status === "approved"
-              ? "Approved — ready to send."
-              : "Rejected — no send.",
+              ? "Approved - ready to send."
+              : "Rejected - no send.",
         );
       } else {
         setMessage(result.error);
@@ -57,13 +57,13 @@ const DraftControls = ({ draft }: { draft: PendingApprovalDraft }) => {
   };
 
   if (status === "rejected")
-    return <p className={styles.draftTerminal}>Rejected — no send</p>;
+    return <p className={styles.draftTerminal}>Rejected - no send</p>;
   if (status === "sent")
-    return <p className={styles.draftSent}>Sent — demo delivery logged</p>;
+    return <p className={styles.draftSent}>Sent - demo delivery logged</p>;
   if (status === "approved")
     return (
       <div className={styles.draftControls}>
-        <p className={styles.draftApproved}>Approved — ready to send</p>
+        <p className={styles.draftApproved}>Approved - ready to send</p>
         <button
           className={styles.sendButton}
           disabled={isPending}
@@ -157,7 +157,7 @@ export const PendingApprovals = ({
                 <div className={styles.draftTopline}>
                   <p className={styles.draftSku}>{draft.sku}</p>
                   <p className={styles.draftReco}>
-                    Recommended order: {draft.recommendedQty ?? "—"} units
+                    Recommended order: {draft.recommendedQty ?? "-"} units
                   </p>
                 </div>
                 <h3>{draft.subject}</h3>

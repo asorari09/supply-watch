@@ -21,7 +21,7 @@ export const InjectDisruption = () => {
       }
       router.refresh();
       setMessage(
-        `Demo loaded: ${result.summary.flags} products flagged, ${result.summary.pendingDrafts} message ready for review.`,
+        `Simulated scenario: ${result.summary.flags} products flagged, ${result.summary.pendingDrafts} message ready for review.`,
       );
     });
   };
@@ -34,8 +34,8 @@ export const InjectDisruption = () => {
         onClick={inject}
         type="button"
       >
-        <span>{isPending ? "Running demo…" : "Run demo scenario"}</span>
-        <small>Demo · not live data</small>
+        <span>{isPending ? "Running simulation…" : "Run demo scenario"}</span>
+        <small>Simulation mode</small>
       </button>
       {message === null ? null : (
         <p className={styles.injectMessage}>{message}</p>

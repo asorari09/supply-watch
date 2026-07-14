@@ -80,7 +80,7 @@ export const WhatsHappeningPanel = ({
         <span className={styles.count}>{ongoing.length} ongoing</span>
       </div>
       {ongoing.length === 0 ? (
-        <EmptyState>All clear — no ongoing weather or news events.</EmptyState>
+        <EmptyState>All clear - no ongoing weather or news events.</EmptyState>
       ) : (
         <>
           <ul className={styles.signalList}>
@@ -160,7 +160,7 @@ export const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
         <span className={styles.count}>{alerts.length} recent</span>
       </div>
       {alerts.length === 0 ? (
-        <EmptyState>All clear — no stock alerts right now.</EmptyState>
+        <EmptyState>All clear - no stock alerts right now.</EmptyState>
       ) : (
         <ul className={styles.alertList}>
           {visibleAlerts.map((alert) => (
