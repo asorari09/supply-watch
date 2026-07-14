@@ -923,13 +923,52 @@ details:not([open]) > summary.toggleCleared {
   padding: 5px 8px;
   position: absolute;
   top: 16px;
-  z-index: 1;
+  z-index: 2;
+}
+
+.mapZoomControls {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 2;
+}
+
+.mapZoomButton {
+  background: rgb(255 255 255 / 94%);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1;
+  min-width: 2rem;
+  padding: 6px 8px;
+}
+
+.mapZoomButton:hover:not(:disabled) {
+  background: #fff;
+  border-color: var(--ink-muted, #c4c9d4);
+}
+
+.mapZoomButton:disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 
 .mapSvg {
+  cursor: grab;
   display: block;
   height: auto;
+  touch-action: none;
   width: 100%;
+}
+
+.mapSvg:active {
+  cursor: grabbing;
 }
 
 .mapOcean {
