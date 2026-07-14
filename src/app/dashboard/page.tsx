@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 
 import {
-  formatActionHeadline,
-  formatActionSupport,
+  formatActionMetricsInline,
+  formatActionOrderTitle,
+  formatActionSupportCompact,
   formatAlertLevel,
   formatAlertMessage,
   formatDisruptionType,
   formatExposureType,
   formatModeLabel,
   formatMonitoringLine,
-  formatProjectedStockShort,
   formatRegionList,
   formatSeverityLabel,
   formatSignalSource,
@@ -101,19 +101,19 @@ const NetworkHero = ({ data }: { data: DashboardData }) => (
   </section>
 );
 
-const ActionCard = ({ risk }: { risk: DashboardRisk }) => (
-  <article
-    className={`${styles.actionCard} ${styles[`action${risk.severity}`]}`}
-  >
-    <h3 className={styles.actionHeadline}>
-      {formatActionHeadline({
-        sku: risk.sku,
-        recommendedQty: risk.recommendedQty,
-        severity: risk.severity,
-      })}
-    </h3>
-    <p className={styles.actionSupport}>
-      {formatActionSupport({
+const ActionRow = ({ risk }: { risk: DashboardRisk }) => (
+  <li className={`${styles.actionRowItem} ${styles[`action${risk.severity}`]}`}>
+    <div className={styles.actionSkuCell}>
+      <span className={`${styles.chip} ${styles[`severity${risk.severity}`]}`}>
+        {formatSeverityLabel(risk.severity)}
+      </span>
+      <span className={styles.actionSku}>{risk.sku}</span>
+    </div>
+    <strong className={styles.actionOrder}>
+      {formatActionOrderTitle(risk.recommendedQty)}
+    </strong>
+    <p className={styles.actionReason}>
+      {formatActionSupportCompact({
         disruptionTypes: risk.disruptionTypes,
         leadTimeBase: risk.leadTimeBase,
         leadTimeDelta: risk.leadTimeDelta,
@@ -121,10 +121,14 @@ const ActionCard = ({ risk }: { risk: DashboardRisk }) => (
         rop: risk.rop,
       })}
     </p>
-    <div className={styles.chipRow}>
-      <span className={`${styles.chip} ${styles[`severity${risk.severity}`]}`}>
-        {formatSeverityLabel(risk.severity)}
-      </span>
+    <p className={styles.actionMetrics}>
+      {formatActionMetricsInline({
+        ss: risk.ss,
+        rop: risk.rop,
+        inventoryPosition: risk.inventoryPosition,
+      })}
+    </p>
+    <div className={styles.actionPills}>
       {risk.exposureTypes.map((exposureType) => (
         <span className={styles.exposureBadge} key={exposureType}>
           {formatExposureType(exposureType)}
@@ -136,31 +140,19 @@ const ActionCard = ({ risk }: { risk: DashboardRisk }) => (
         </span>
       ))}
     </div>
-    <dl className={styles.metricRow}>
-      <div>
-        <dt>Safety stock buffer</dt>
-        <dd>{risk.ss ?? "—"}</dd>
-      </div>
-      <div>
-        <dt>Reorder point</dt>
-        <dd>{risk.rop ?? "—"}</dd>
-      </div>
-      <div>
-        <dt>Projected stock</dt>
-        <dd>{formatProjectedStockShort(risk.inventoryPosition)}</dd>
-      </div>
-    </dl>
-  </article>
+  </li>
 );
 
-const MonitoringCard = ({ risk }: { risk: DashboardRisk }) => (
-  <article className={styles.monitorCard}>
-    <span className={styles.monitorLabel}>Monitoring — no action needed</span>
-    {formatMonitoringLine({
-      sku: risk.sku,
-      disruptionTypes: risk.disruptionTypes,
-    })}
-  </article>
+const MonitoringRow = ({ risk }: { risk: DashboardRisk }) => (
+  <li className={styles.monitorRow}>
+    <span className={styles.monitorLabel}>Monitoring</span>
+    <span className={styles.monitorText}>
+      {formatMonitoringLine({
+        sku: risk.sku,
+        disruptionTypes: risk.disruptionTypes,
+      })}
+    </span>
+  </li>
 );
 
 const SignalItem = ({
@@ -370,11 +362,11 @@ export default async function DashboardPage() {
             appear under monitoring below.
           </EmptyState>
         ) : (
-          <div className={styles.actionList}>
+          <ul className={styles.actionTable}>
             {actionRisks.map((risk) => (
-              <ActionCard key={risk.id} risk={risk} />
+              <ActionRow key={risk.id} risk={risk} />
             ))}
-          </div>
+          </ul>
         )}
       </section>
 
@@ -391,9 +383,11 @@ export default async function DashboardPage() {
             <span>{monitoringRisks.length} items</span>
           </div>
           <div className={styles.monitorList}>
-            {monitoringRisks.map((risk) => (
-              <MonitoringCard key={risk.id} risk={risk} />
-            ))}
+            <ul className={styles.monitorTable}>
+              {monitoringRisks.map((risk) => (
+                <MonitoringRow key={risk.id} risk={risk} />
+              ))}
+            </ul>
           </div>
         </section>
       )}

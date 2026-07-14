@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   formatActionHeadline,
+  formatActionMetricsInline,
+  formatActionOrderTitle,
+  formatActionSupportCompact,
   formatProjectedStock,
   formatRegionLabel,
   formatSignalStatus,
@@ -33,5 +36,46 @@ describe("dashboard copy helpers", () => {
         severity: "high",
       }),
     ).toBe("⚠ Order 900 units of RIS-SEAL-835");
+  });
+
+  it("formatActionSupportCompact preserves disruption, LT, stock, and ROP numbers", () => {
+    const compact = formatActionSupportCompact({
+      disruptionTypes: ["flood"],
+      leadTimeBase: 28,
+      leadTimeDelta: 7,
+      inventoryPosition: 105,
+      rop: 1404,
+    });
+    expect(compact).toBe(
+      "Flood · lead time 28→35d · stock 105 vs reorder 1404",
+    );
+    expect(compact).toContain("28");
+    expect(compact).toContain("35");
+    expect(compact).toContain("105");
+    expect(compact).toContain("1404");
+  });
+
+  it("formatActionSupportCompact keeps shortfall and delta when base LT is missing", () => {
+    const compact = formatActionSupportCompact({
+      disruptionTypes: ["port_closure"],
+      leadTimeBase: null,
+      leadTimeDelta: 7,
+      inventoryPosition: -40,
+      rop: 500,
+    });
+    expect(compact).toBe(
+      "Port Closure · lead time +7d · stock shortfall 40 vs reorder 500",
+    );
+  });
+
+  it("formats dense order title and inline metrics with numbers", () => {
+    expect(formatActionOrderTitle(1500)).toBe("Order 1500 units");
+    expect(
+      formatActionMetricsInline({
+        ss: 264,
+        rop: 1404,
+        inventoryPosition: 105,
+      }),
+    ).toBe("SS 264 · ROP 1404 · Stock 105");
   });
 });

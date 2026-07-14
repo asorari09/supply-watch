@@ -127,6 +127,10 @@ export const formatActionHeadline = (input: {
   return `${warn}Order ${qty} units of ${input.sku}`;
 };
 
+/** Dense row title — qty only; SKU lives in its own column. */
+export const formatActionOrderTitle = (recommendedQty: number | null): string =>
+  `Order ${recommendedQty ?? "—"} units`;
+
 export const formatActionSupport = (input: {
   disruptionTypes: readonly string[];
   leadTimeBase: number | null;
@@ -156,6 +160,42 @@ export const formatActionSupport = (input: {
   if (input.inventoryPosition < 0) return `${lead} ${stock}, below ${rop}.`;
   return `${lead} ${stock} is below ${rop}.`;
 };
+
+/**
+ * Compact one-line reason for dense action rows.
+ * Same fields as formatActionSupport — numbers always rendered, prose condensed.
+ */
+export const formatActionSupportCompact = (input: {
+  disruptionTypes: readonly string[];
+  leadTimeBase: number | null;
+  leadTimeDelta: number;
+  inventoryPosition: number | null;
+  rop: number | null;
+}): string => {
+  const disruption =
+    input.disruptionTypes.length === 0
+      ? "Disruption"
+      : formatDisruptionType(input.disruptionTypes[0] ?? "disruption");
+  const lead =
+    input.leadTimeBase === null
+      ? `lead time +${input.leadTimeDelta}d`
+      : `lead time ${input.leadTimeBase}→${input.leadTimeBase + input.leadTimeDelta}d`;
+  const stock =
+    input.inventoryPosition === null
+      ? "stock —"
+      : input.inventoryPosition < 0
+        ? `stock shortfall ${Math.abs(input.inventoryPosition)}`
+        : `stock ${input.inventoryPosition}`;
+  const reorder = input.rop === null ? "reorder —" : `reorder ${input.rop}`;
+  return `${disruption} · ${lead} · ${stock} vs ${reorder}`;
+};
+
+export const formatActionMetricsInline = (input: {
+  ss: number | null;
+  rop: number | null;
+  inventoryPosition: number | null;
+}): string =>
+  `SS ${input.ss ?? "—"} · ROP ${input.rop ?? "—"} · Stock ${formatProjectedStockShort(input.inventoryPosition)}`;
 
 export const formatMonitoringLine = (input: {
   sku: string;
