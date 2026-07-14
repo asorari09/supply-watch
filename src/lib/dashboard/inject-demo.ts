@@ -102,8 +102,7 @@ const clearPriorSyntheticScenario = async (
   const { data: flags, error: flagsError } = await client
     .from("risk_flags")
     .select("id")
-    .in("signal_id", signalIds)
-    .eq("status", "open");
+    .in("signal_id", signalIds);
   requireSuccess(flagsError);
   const flagIds = (flags ?? []).map((flag) => flag.id);
   if (flagIds.length > 0) {
@@ -135,7 +134,7 @@ const clearPriorSyntheticScenario = async (
       .from("risk_flags")
       .update({ status: "resolved" })
       .in("id", flagIds)
-      .eq("status", "open");
+      .neq("status", "resolved");
     requireSuccess(resolveFlagsError);
   }
   const { error: resolveSignalsError } = await client
