@@ -59,7 +59,11 @@ export const completeNewsExtraction = async (
   if (client === undefined) return { ok: false };
   const model = env.LLM_MODEL_NEWS ?? "gpt-4o-mini";
   const langfuse = createLangfuse();
-  const generation = langfuse?.generation({
+  const trace = langfuse?.trace({
+    name: "news-extraction",
+    metadata: { surface: "news", capped: true },
+  });
+  const generation = trace?.generation({
     name: "news-extraction",
     model,
     input: prompt,
