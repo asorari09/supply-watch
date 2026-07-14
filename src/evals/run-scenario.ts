@@ -4,6 +4,7 @@ import {
   type AssessmentResult,
 } from "@/lib/agents/assessment-engine/assess";
 import { correlate } from "@/lib/agents/assessment-engine/correlate";
+import type { computeReorder } from "@/lib/inventory";
 import { fixedClock } from "@/lib/runtime/clock";
 import { createRunContext, type RunContext } from "@/lib/runtime/run-context";
 
@@ -13,6 +14,7 @@ export interface EvalLlmStub {
 
 export interface RunScenarioDependencies {
   llm?: EvalLlmStub;
+  computeReorder?: typeof computeReorder;
 }
 
 export interface ScenarioResult extends AssessmentResult {
@@ -42,10 +44,15 @@ export const runScenario = (
     skus: scenario.initialInventory.skus,
     shipments: scenario.initialInventory.shipments,
   });
-  const assessment = assess({
-    correlation,
-    horizonBase: context.clock.now().toISOString(),
-  });
+  const assessment = assess(
+    {
+      correlation,
+      horizonBase: context.clock.now().toISOString(),
+    },
+    deps.computeReorder === undefined
+      ? {}
+      : { computeReorder: deps.computeReorder },
+  );
 
   return { ...assessment, context, sentDrafts: [] };
 };

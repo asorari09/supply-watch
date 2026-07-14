@@ -6,6 +6,7 @@ import type {
 } from "@/lib/agents/assessment-engine/correlate";
 import type { AlertLevel, Signal } from "@/lib/domain";
 import { computeReorder } from "@/lib/inventory";
+import type { ReorderResult } from "@/lib/inventory";
 
 export interface AssessmentRecommendation {
   skuId: string;
@@ -100,10 +101,18 @@ const effectiveOnOrder = (
   );
 };
 
-export const assess = (input: {
-  correlation: CorrelationResult;
-  horizonBase: string;
-}): AssessmentResult => {
+export const assess = (
+  input: {
+    correlation: CorrelationResult;
+    horizonBase: string;
+  },
+  deps: {
+    computeReorder?: (
+      input: Parameters<typeof computeReorder>[0],
+    ) => ReorderResult;
+  } = {},
+): AssessmentResult => {
+  const reorder = deps.computeReorder ?? computeReorder;
   const flags: AssessmentFlag[] = [];
   const recommendations: AssessmentRecommendation[] = [];
   const alerts: AssessmentAlert[] = [];
@@ -139,7 +148,7 @@ export const assess = (input: {
       computedLeadTimeDelta: entry.delayDays,
     }));
     flags.push(...localFlags);
-    const result = computeReorder({
+    const result = reorder({
       d: correlation.sku.avgDailyDemand,
       sigmaD: correlation.sku.demandStd,
       ltPrime: correlation.leadTimePrime,
