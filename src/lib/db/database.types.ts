@@ -513,7 +513,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      release_tick_lock: { Args: never; Returns: undefined }
+      try_tick_lock: { Args: never; Returns: boolean }
     }
     Enums: {
       alert_delivery_via: "dashboard" | "webhook"

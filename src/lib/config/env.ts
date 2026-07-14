@@ -9,7 +9,7 @@ const envSchema = z.object({
   SUPABASE_URL: z.string().url(),
   SUPABASE_ANON_KEY: z.string().trim().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().trim().min(1),
-  TICK_SECRET: z.string().trim().min(1),
+  TICK_SECRET: z.string().trim().min(32),
   OPENAI_API_KEY: optionalNonEmptyString,
   ANTHROPIC_API_KEY: optionalNonEmptyString,
   LLM_MODEL_NEWS: optionalNonEmptyString,

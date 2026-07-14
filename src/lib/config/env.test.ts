@@ -4,7 +4,8 @@ const requiredEnv = {
   SUPABASE_URL: "https://example.supabase.co",
   SUPABASE_ANON_KEY: "anon-key",
   SUPABASE_SERVICE_ROLE_KEY: "service-role-key",
-  TICK_SECRET: "tick-secret",
+  TICK_SECRET:
+    "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
 };
 
 afterEach(() => {
