@@ -145,17 +145,28 @@ The live integration suite uses only the dedicated `eval` schema and calls `eval
 
 ## Production deployment
 
-| Surface      | Detail                                                                                                                                                          |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App          | Vercel project `supply-watch`, auto-deploys from `master`                                                                                                       |
-| Stable alias | https://supply-watch-abhi-soraris-projects.vercel.app                                                                                                           |
-| Hourly tick  | Supabase `pg_cron` job `supply_watch_hourly_tick` (`0 * * * *`) POSTs `/api/tick/run` on the stable alias with `Authorization: Bearer <TICK_SECRET>` from Vault |
-| Database     | Supabase Postgres (`public` + `eval`); schema via `supabase/migrations`                                                                                         |
+| Surface      | Detail                                                                                                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App          | Vercel project `supply-watch`, auto-deploys from `master`                                                                                                     |
+| Public alias | https://supply-watch-console.vercel.app                                                                                                                       |
+| Cron alias   | https://supply-watch-abhi-soraris-projects.vercel.app (leave cron pointed here)                                                                               |
+| Hourly tick  | Supabase `pg_cron` job `supply_watch_hourly_tick` (`0 * * * *`) POSTs `/api/tick/run` on the cron alias with `Authorization: Bearer <TICK_SECRET>` from Vault |
+| Database     | Supabase Postgres (`public` + `eval`); schema via `supabase/migrations`                                                                                       |
 
 CI (GitHub Actions) runs typecheck, lint, format, offline tests, build, and gitleaks on every push. `pnpm build` does **not** require secrets - env validation is lazy via `getEnv()`. Runtime still fails closed when required vars are missing.
 
-Configure the cron secret and schedule with `public.configure_hourly_supply_watch_tick(p_tick_secret)` (see migrations `20260714000000` / `20260714000001`). Do not retarget the cron URL away from the stable production alias.
+Configure the cron secret and schedule with `public.configure_hourly_supply_watch_tick(p_tick_secret)` (see migrations `20260714000000` / `20260714000001`). Do not retarget the cron URL away from the cron production alias.
+
+### Refresh the public alias after a production deploy
+
+`supply-watch.vercel.app` is already taken on Vercel. Use `supply-watch-console.vercel.app` instead:
+
+```bash
+DEPLOY=$(vercel ls supply-watch --scope abhi-soraris-projects | awk '/● Ready/ && /Production/{print $3; exit}')
+vercel alias set "$DEPLOY" supply-watch-console.vercel.app --scope abhi-soraris-projects
+curl -sI "https://supply-watch-console.vercel.app/dashboard" | head -1
+```
 
 ## Demo integrity
 
-Inventory is synthetic and labeled. Synthetic injection is visibly marked `Demo · replay`; it is not presented as live weather/news data. Dashboard sends are mocked by default, and the system remains useful with every LLM feature disabled.
+Inventory is synthetic and labeled. Simulated injection is visibly marked Simulation mode; it is not presented as live weather/news data. Dashboard sends are mocked by default, and the system remains useful with every LLM feature disabled.
