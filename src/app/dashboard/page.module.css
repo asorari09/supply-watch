@@ -37,6 +37,53 @@
   color: var(--muted);
   font-size: 0.96rem;
 }
+.headerControls {
+  align-items: flex-end;
+  display: flex;
+  gap: 10px;
+}
+.injectControl {
+  position: relative;
+}
+.injectButton {
+  align-items: flex-start;
+  background: transparent;
+  border: 1px dashed #3e6f85;
+  border-radius: 7px;
+  color: #b9d6e2;
+  cursor: pointer;
+  display: grid;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  gap: 2px;
+  padding: 7px 10px;
+  text-align: left;
+}
+.injectButton > span {
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.injectButton small {
+  color: var(--blue-700);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.59rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.injectButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+.injectMessage {
+  color: var(--blue-700);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.64rem;
+  margin-top: 5px;
+  max-width: 250px;
+  position: absolute;
+  right: 0;
+  text-align: right;
+  width: max-content;
+}
 .modeBadge {
   align-items: center;
   background: var(--teal-100);

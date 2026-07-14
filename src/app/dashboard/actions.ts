@@ -5,11 +5,18 @@ import { revalidatePath } from "next/cache";
 import { approveDraft, rejectDraft } from "@/lib/comms/approval";
 import { sendDraft } from "@/lib/comms/send";
 import { env } from "@/lib/config/env";
+import {
+  injectSyntheticDisruption,
+  type DemoInjectionSummary,
+} from "@/lib/dashboard/inject-demo";
 import { createSupabaseAdminClient } from "@/lib/db/admin-client";
 
 export type DraftActionResult =
   | { ok: true; status: "approved" | "rejected" | "sent" }
   | { ok: false; error: string };
+
+export type InjectActionResult =
+  { ok: true; summary: DemoInjectionSummary } | { ok: false; error: string };
 
 const revalidateDashboard = (): void => {
   revalidatePath("/dashboard");
@@ -82,5 +89,18 @@ export const sendDraftAction = async (
     return { ok: true, status: "sent" };
   } catch {
     return { ok: false, error: "Unable to send this draft." };
+  }
+};
+
+export const injectDisruptionAction = async (): Promise<InjectActionResult> => {
+  try {
+    const summary = await injectSyntheticDisruption();
+    revalidateDashboard();
+    return { ok: true, summary };
+  } catch {
+    return {
+      ok: false,
+      error: "Unable to inject the synthetic demo scenario.",
+    };
   }
 };

@@ -7,6 +7,7 @@ import {
   type DashboardRisk,
 } from "@/lib/dashboard/load-dashboard";
 
+import { InjectDisruption } from "./inject-disruption";
 import styles from "./page.module.css";
 import { PendingApprovals } from "./pending-approvals";
 
@@ -259,7 +260,10 @@ export default async function DashboardPage() {
             Deterministic inventory decisions, surfaced for human review.
           </p>
         </div>
-        <ModeBadge mode={mode} />
+        <div className={styles.headerControls}>
+          <InjectDisruption />
+          <ModeBadge mode={mode} />
+        </div>
       </header>
       <section className={styles.heroSection} aria-labelledby="risk-title">
         <div className={styles.sectionTitle}>
