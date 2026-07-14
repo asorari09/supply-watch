@@ -6,6 +6,13 @@ export const systemClock: Clock = {
   now: () => new Date(),
 };
 
-export const fixedClock = (instant: Date): Clock => ({
-  now: () => new Date(instant.getTime()),
-});
+export const fixedClock = (instant: Date | string): Clock => {
+  const fixedInstant =
+    typeof instant === "string"
+      ? new Date(instant)
+      : new Date(instant.getTime());
+
+  return {
+    now: () => new Date(fixedInstant.getTime()),
+  };
+};
