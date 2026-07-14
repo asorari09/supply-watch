@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 
-import { formatProjectedStockShort } from "@/lib/dashboard/copy";
+import { formatActionMetricsInline } from "@/lib/dashboard/copy";
 
 import {
   approveDraftAction,
@@ -32,6 +32,7 @@ const EmptyState = ({ children }: { children: React.ReactNode }) => (
 const DraftControls = ({ draft }: { draft: PendingApprovalDraft }) => {
   const [status, setStatus] = useState(draft.status);
   const [body, setBody] = useState(draft.body);
+  const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -41,6 +42,7 @@ const DraftControls = ({ draft }: { draft: PendingApprovalDraft }) => {
       const result = await action();
       if (result.ok) {
         setStatus(result.status);
+        setEditing(false);
         setMessage(
           result.status === "sent"
             ? "Sent — demo delivery logged."
@@ -78,16 +80,23 @@ const DraftControls = ({ draft }: { draft: PendingApprovalDraft }) => {
 
   return (
     <div className={styles.draftControls}>
-      <label className={styles.editLabel} htmlFor={`draft-body-${draft.id}`}>
-        Edit message before approving
-      </label>
-      <textarea
-        className={styles.draftTextarea}
-        disabled={isPending}
-        id={`draft-body-${draft.id}`}
-        onChange={(event) => setBody(event.target.value)}
-        value={body}
-      />
+      {editing ? (
+        <>
+          <label
+            className={styles.editLabel}
+            htmlFor={`draft-body-${draft.id}`}
+          >
+            Edit message before approving
+          </label>
+          <textarea
+            className={styles.draftTextarea}
+            disabled={isPending}
+            id={`draft-body-${draft.id}`}
+            onChange={(event) => setBody(event.target.value)}
+            value={body}
+          />
+        </>
+      ) : null}
       <div className={styles.actionRow}>
         <button
           className={styles.approveButton}
@@ -96,6 +105,14 @@ const DraftControls = ({ draft }: { draft: PendingApprovalDraft }) => {
           type="button"
         >
           {isPending ? "Saving…" : "Approve"}
+        </button>
+        <button
+          className={styles.editToggle}
+          disabled={isPending}
+          onClick={() => setEditing((value) => !value)}
+          type="button"
+        >
+          {editing ? "Hide edit" : "Edit"}
         </button>
         <button
           className={styles.rejectButton}
@@ -136,32 +153,23 @@ export const PendingApprovals = ({
         <div className={styles.draftList}>
           {drafts.map((draft) => (
             <article className={styles.draft} key={draft.id}>
-              <div>
-                <p className={styles.draftSku}>{draft.sku}</p>
+              <div className={styles.draftMain}>
+                <div className={styles.draftTopline}>
+                  <p className={styles.draftSku}>{draft.sku}</p>
+                  <p className={styles.draftReco}>
+                    Recommended order: {draft.recommendedQty ?? "—"} units
+                  </p>
+                </div>
                 <h3>{draft.subject}</h3>
-                <p className={styles.draftBody}>{draft.body}</p>
-                <p className={styles.draftReco}>
-                  Recommended order: {draft.recommendedQty ?? "—"} units
+                <p className={styles.draftBodyClamp}>{draft.body}</p>
+                <p className={styles.draftMetrics}>
+                  {formatActionMetricsInline({
+                    ss: draft.ss,
+                    rop: draft.rop,
+                    inventoryPosition: draft.inventoryPosition,
+                  })}
                 </p>
               </div>
-              <dl>
-                <div>
-                  <dt>Safety stock buffer</dt>
-                  <dd>{draft.ss ?? "—"}</dd>
-                </div>
-                <div>
-                  <dt>Reorder point</dt>
-                  <dd>{draft.rop ?? "—"}</dd>
-                </div>
-                <div>
-                  <dt>Projected stock</dt>
-                  <dd>{formatProjectedStockShort(draft.inventoryPosition)}</dd>
-                </div>
-                <div>
-                  <dt>Recommended order</dt>
-                  <dd>{draft.recommendedQty ?? "—"} units</dd>
-                </div>
-              </dl>
               <DraftControls draft={draft} />
             </article>
           ))}
