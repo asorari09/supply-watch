@@ -4,23 +4,16 @@ import {
   formatActionMetricsInline,
   formatActionOrderTitle,
   formatActionSupportCompact,
-  formatAlertLevel,
-  formatAlertMessage,
   formatDisruptionType,
   formatExposureType,
   formatModeLabel,
   formatMonitoringLine,
-  formatRegionList,
   formatSeverityLabel,
-  formatSignalSource,
-  formatSignalStatus,
   formatTimeOnly,
-  formatTimestamp,
   severityRank,
 } from "@/lib/dashboard/copy";
 import {
   loadDashboard,
-  type DashboardAlert,
   type DashboardData,
   type DashboardRisk,
   type DashboardTick,
@@ -31,6 +24,7 @@ import styles from "./page.module.css";
 import { PendingApprovals } from "./pending-approvals";
 import { RegionRiskMap } from "./region-risk-map";
 import { SeverityDonut } from "./severity-donut";
+import { AlertsPanel, WhatsHappeningPanel } from "./supporting-panels";
 
 export const metadata: Metadata = {
   title: "Supply Risk Console",
@@ -179,154 +173,6 @@ const MonitoringRow = ({ risk }: { risk: DashboardRisk }) => (
   </li>
 );
 
-const SignalItem = ({
-  signal,
-}: {
-  signal: DashboardData["signals"][number];
-}) => (
-  <li className={signal.status === "degraded" ? styles.degradedSignal : ""}>
-    <div className={styles.signalTopline}>
-      <span
-        className={`${styles.chip} ${styles[`severity${signal.severity}`]}`}
-      >
-        {formatSeverityLabel(signal.severity)}
-      </span>
-      <span className={styles.source}>{formatSignalSource(signal.source)}</span>
-      <time className={styles.signalTime} dateTime={signal.detectedAt}>
-        {formatTimestamp(signal.detectedAt)}
-      </time>
-    </div>
-    <p>{formatRegionList(signal.regions)}</p>
-    <span
-      className={`${styles.status} ${
-        signal.status === "resolved"
-          ? styles.statusCleared
-          : signal.status === "degraded"
-            ? styles.statusDegraded
-            : ""
-      }`}
-    >
-      {formatSignalStatus(signal.status)}
-    </span>
-  </li>
-);
-
-const WhatsHappening = ({ signals }: Pick<DashboardData, "signals">) => {
-  const incomplete = signals.filter((signal) => signal.status === "degraded");
-  const ongoing = signals.filter(
-    (signal) => signal.status !== "resolved" && signal.status !== "degraded",
-  );
-  const cleared = signals.filter((signal) => signal.status === "resolved");
-  return (
-    <section className={styles.panel} aria-labelledby="whats-happening-title">
-      <div className={styles.panelHeader}>
-        <div>
-          <p className={styles.eyebrow}>Context</p>
-          <h2 id="whats-happening-title">What&apos;s happening</h2>
-        </div>
-        <span className={styles.count}>{ongoing.length} ongoing</span>
-      </div>
-      {ongoing.length === 0 ? (
-        <EmptyState>All clear — no ongoing weather or news events.</EmptyState>
-      ) : (
-        <ul className={styles.signalList}>
-          {ongoing.map((signal) => (
-            <SignalItem key={signal.id} signal={signal} />
-          ))}
-        </ul>
-      )}
-      {incomplete.length === 0 ? null : (
-        <details>
-          <summary className={styles.toggleCleared}>
-            Show incomplete ({incomplete.length})
-          </summary>
-          <ul className={styles.signalList}>
-            {incomplete.map((signal) => (
-              <SignalItem key={signal.id} signal={signal} />
-            ))}
-          </ul>
-        </details>
-      )}
-      {cleared.length === 0 ? null : (
-        <details>
-          <summary className={styles.toggleCleared}>
-            Show cleared ({cleared.length})
-          </summary>
-          <ul className={styles.signalList}>
-            {cleared.map((signal) => (
-              <SignalItem key={signal.id} signal={signal} />
-            ))}
-          </ul>
-        </details>
-      )}
-    </section>
-  );
-};
-
-const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
-  const visibleAlerts = alerts.filter(
-    (alert, index) =>
-      alerts.findIndex(
-        (candidate) =>
-          candidate.sku === alert.sku && candidate.level === alert.level,
-      ) === index,
-  );
-  const alertCount = (alert: DashboardAlert): number =>
-    alerts.filter(
-      (candidate) =>
-        candidate.sku === alert.sku && candidate.level === alert.level,
-    ).length;
-
-  return (
-    <section className={styles.panel} aria-labelledby="alerts-title">
-      <div className={styles.panelHeader}>
-        <div>
-          <p className={styles.eyebrow}>Attention</p>
-          <h2 id="alerts-title">Alerts</h2>
-        </div>
-        <span className={styles.count}>{alerts.length} recent</span>
-      </div>
-      {alerts.length === 0 ? (
-        <EmptyState>All clear — no stock alerts right now.</EmptyState>
-      ) : (
-        <ul className={styles.alertList}>
-          {visibleAlerts.map((alert) => (
-            <li key={alert.id}>
-              <span
-                className={`${styles.alertRail} ${styles[`alert${alert.level}`]}`}
-              />
-              <div>
-                <p>
-                  <span
-                    className={`${styles.chip} ${styles[`alert${alert.level}`]}`}
-                  >
-                    {formatAlertLevel(alert.level)}
-                  </span>
-                  <span className={styles.alertMessage}>
-                    {formatAlertMessage({
-                      level: alert.level,
-                      sku: alert.sku,
-                    })}
-                  </span>
-                  {alertCount(alert) > 1 ? (
-                    <span className={styles.alertDuplicateCount}>
-                      ×{alertCount(alert)}
-                    </span>
-                  ) : null}
-                </p>
-                <small className={styles.metadata}>
-                  {alert.sku ?? "Product link unavailable"} ·{" "}
-                  {formatTimestamp(alert.createdAt)}
-                </small>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-};
-
 const SystemStatus = ({
   ticks,
   mode,
@@ -443,7 +289,7 @@ export default async function DashboardPage() {
           </div>
         </div>
         <div className={styles.supportGrid}>
-          <WhatsHappening signals={data.signals} />
+          <WhatsHappeningPanel signals={data.signals} />
           <AlertsPanel alerts={data.alerts} />
         </div>
         <div className={styles.supportingNote}>
