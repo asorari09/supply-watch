@@ -147,7 +147,6 @@ export const assess = (
       exposureType: entry.exposureType,
       computedLeadTimeDelta: entry.delayDays,
     }));
-    flags.push(...localFlags);
     const result = reorder({
       d: correlation.sku.avgDailyDemand,
       sigmaD: correlation.sku.demandStd,
@@ -163,38 +162,26 @@ export const assess = (
       onOrder: onOrderEffective,
       backorders: correlation.sku.backorders,
     });
+    // Fail closed: never raise an at-risk flag with fabricated zero metrics.
+    // Exposure flags with IP ≥ ROP (recommendedQty 0 / monitoring) remain intentional.
+    if (result.isInsufficientData) continue;
     const firstFlag = localFlags[0];
     if (firstFlag === undefined) continue;
-    const recommendation: AssessmentRecommendation = result.isInsufficientData
-      ? {
-          skuId: correlation.sku.id,
-          riskFlagId: firstFlag.id,
-          ss: 0,
-          rop: 0,
-          inventoryPosition: 0,
-          recommendedQty: 0,
-          formulaBranch: "insufficient_data",
-          rationaleTemplate: result.reason,
-          isInsufficientData: true,
-          inputsHash: inputsHash(correlation, onOrderEffective),
-        }
-      : {
-          skuId: correlation.sku.id,
-          riskFlagId: firstFlag.id,
-          ss: result.ss,
-          rop: result.rop,
-          inventoryPosition: result.inventoryPosition,
-          recommendedQty: result.recommendedQty,
-          formulaBranch: result.formulaBranch,
-          rationaleTemplate: result.rationaleTemplate,
-          isInsufficientData: false,
-          inputsHash: inputsHash(correlation, onOrderEffective),
-        };
+    flags.push(...localFlags);
+    const recommendation: AssessmentRecommendation = {
+      skuId: correlation.sku.id,
+      riskFlagId: firstFlag.id,
+      ss: result.ss,
+      rop: result.rop,
+      inventoryPosition: result.inventoryPosition,
+      recommendedQty: result.recommendedQty,
+      formulaBranch: result.formulaBranch,
+      rationaleTemplate: result.rationaleTemplate,
+      isInsufficientData: false,
+      inputsHash: inputsHash(correlation, onOrderEffective),
+    };
     recommendations.push(recommendation);
-    if (
-      !recommendation.isInsufficientData &&
-      recommendation.inventoryPosition < recommendation.rop
-    )
+    if (recommendation.inventoryPosition < recommendation.rop)
       for (const flag of localFlags) {
         const level = alertLevel(flag.signal, recommendation);
         alerts.push({ flagId: flag.id, level });

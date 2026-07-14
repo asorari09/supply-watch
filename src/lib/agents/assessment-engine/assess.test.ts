@@ -199,7 +199,8 @@ describe("assessment edge cases", () => {
       }),
       horizonBase,
     });
-    expect(bad.recommendations[0]?.isInsufficientData).toBe(true);
+    expect(bad.flags).toEqual([]);
+    expect(bad.recommendations).toEqual([]);
     expect(bad.alerts).toEqual([]);
   });
 

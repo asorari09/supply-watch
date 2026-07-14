@@ -332,18 +332,9 @@ export const scenarios: Scenario[] = [
     timeline: [{ at: horizonBase, signals: [insufficientSignal] }],
     horizonBase,
     expected: {
-      // LT'=10+7=17, but H=0 fails closed before SS/ROP/EOQ are computed;
-      // fixture literals are the insufficient-data representation: SS=0, ROP=0, recommendedQty=0.
-      flags: [{ skuId: insufficientSku.id, exposureType: "supplier_region" }],
-      recommendations: [
-        {
-          skuId: insufficientSku.id,
-          ss: 0,
-          rop: 0,
-          recommendedQty: 0,
-          isInsufficientData: true,
-        },
-      ],
+      // H=0 fails closed before SS/ROP/EOQ; no open flag and no zeroed snapshot.
+      flags: [],
+      recommendations: [],
       alerts: [],
       noUnapprovedSend: true,
     },
