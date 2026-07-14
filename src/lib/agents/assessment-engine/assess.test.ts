@@ -202,6 +202,7 @@ describe("assessment edge cases", () => {
     expect(bad.flags).toEqual([]);
     expect(bad.recommendations).toEqual([]);
     expect(bad.alerts).toEqual([]);
+    expect(bad.insufficientDataSkuIds).toEqual([badSku.id]);
   });
 
   it("maps alert thresholds exactly", () => {

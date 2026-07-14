@@ -63,6 +63,15 @@ export const runAssessment = async (
         tick_id: ctx.tickId,
       })),
     );
+    if (result.insufficientDataSkuIds.length > 0) {
+      const { error: resolveInsufficientError } = await deps.client
+        .from("risk_flags")
+        .update({ status: "resolved" })
+        .in("sku_id", result.insufficientDataSkuIds)
+        .eq("status", "open");
+      if (resolveInsufficientError)
+        throw new Error(resolveInsufficientError.message);
+    }
     await upsertReorderRecommendations(
       deps.client,
       result.recommendations.map((recommendation) => ({

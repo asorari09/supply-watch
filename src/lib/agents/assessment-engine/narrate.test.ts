@@ -48,6 +48,7 @@ const assessment = (count = 1): AssessmentResult => ({
     level: "warning" as const,
   })),
   pendingDraftRefs: [],
+  insufficientDataSkuIds: [],
 });
 
 const client = (

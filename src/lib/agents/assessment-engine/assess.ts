@@ -40,6 +40,8 @@ export interface AssessmentResult {
     flag: AssessmentFlag;
     recommendation: AssessmentRecommendation;
   }>;
+  /** Correlated SKUs skipped because reorder inputs were insufficient. */
+  insufficientDataSkuIds: string[];
 }
 
 const hash = (value: string): string =>
@@ -117,6 +119,7 @@ export const assess = (
   const recommendations: AssessmentRecommendation[] = [];
   const alerts: AssessmentAlert[] = [];
   const pendingDraftRefs: AssessmentResult["pendingDraftRefs"] = [];
+  const insufficientDataSkuIds: string[] = [];
   for (const correlation of input.correlation.skus) {
     const onOrderEffective = effectiveOnOrder(correlation, input.horizonBase);
     const contribution: Array<{
@@ -137,6 +140,7 @@ export const assess = (
         shipmentId: exposure.shipment.id,
       })),
     ];
+    if (contribution.length === 0) continue;
     const localFlags = contribution.map((entry) => ({
       id: flagId(entry.signal.id, correlation.sku.id, entry.shipmentId),
       signal: entry.signal,
@@ -164,7 +168,10 @@ export const assess = (
     });
     // Fail closed: never raise an at-risk flag with fabricated zero metrics.
     // Exposure flags with IP ≥ ROP (recommendedQty 0 / monitoring) remain intentional.
-    if (result.isInsufficientData) continue;
+    if (result.isInsufficientData) {
+      insufficientDataSkuIds.push(correlation.sku.id);
+      continue;
+    }
     const firstFlag = localFlags[0];
     if (firstFlag === undefined) continue;
     flags.push(...localFlags);
@@ -188,5 +195,11 @@ export const assess = (
         pendingDraftRefs.push({ flag, recommendation });
       }
   }
-  return { flags, recommendations, alerts, pendingDraftRefs };
+  return {
+    flags,
+    recommendations,
+    alerts,
+    pendingDraftRefs,
+    insufficientDataSkuIds,
+  };
 };
