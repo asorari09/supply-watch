@@ -805,6 +805,26 @@
   fill: #e8ecf3;
 }
 
+.mapCanvas {
+  fill: #f4f6f9;
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.mapZoneLabel {
+  fill: #a0a7b8;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mapZoneRule {
+  stroke: #e1e5ee;
+  stroke-dasharray: 3 5;
+  stroke-width: 1;
+}
+
 .mapLand {
   fill: #cfd6e2;
   stroke: #b8c0cf;

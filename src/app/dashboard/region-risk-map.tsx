@@ -7,7 +7,7 @@ import {
 import styles from "./page.module.css";
 
 const WIDTH = 880;
-const HEIGHT = 320;
+const HEIGHT = 300;
 
 const severityPinClass = (severity: Severity | null) => {
   if (severity === "high") return styles.mapPinHigh;
@@ -28,25 +28,29 @@ const curvedRoute = (
   to: { x: number; y: number },
 ): string => {
   const dx = to.x - from.x;
-  const dy = to.y - from.y;
   const midX = from.x + dx * 0.5;
-  const midY = from.y + dy * 0.5 - Math.abs(dx) * 0.18 - 18;
+  const midY = Math.min(from.y, to.y) - Math.abs(dx) * 0.16 - 24;
   return `M ${from.x} ${from.y} Q ${midX} ${midY} ${to.x} ${to.y}`;
 };
 
 const HubMarker = ({ x, y }: { x: number; y: number }) => (
   <g transform={`translate(${x} ${y})`}>
-    <circle className={styles.mapHubHalo} cx={0} cy={0} r={12} />
+    <circle className={styles.mapHubHalo} cx={0} cy={0} r={14} />
     <path
       className={styles.mapHub}
       d="M0 -9 L2.6 -2.6 L9.5 -2.6 L4 1.8 L6 9 L0 4.6 L-6 9 L-4 1.8 L-9.5 -2.6 L-2.6 -2.6 Z"
     />
-    <text className={styles.mapLabel} textAnchor="middle" x={0} y={22}>
+    <text className={styles.mapLabel} textAnchor="middle" x={0} y={24}>
       Destination
     </text>
   </g>
 );
 
+/**
+ * Abstract network diagram (Option B): real supplier lat/lon + routes, no
+ * landmass basemap. Chosen because react-simple-maps peers React ≤18 and
+ * ships no types — not viable on Next 15 / React 19.
+ */
 export const RegionRiskMap = ({ network }: { network: DashboardNetwork }) => {
   const dest =
     network.destination === null
@@ -64,7 +68,7 @@ export const RegionRiskMap = ({ network }: { network: DashboardNetwork }) => {
         Network status — {network.networkHealthPercent}% healthy
       </div>
       <svg
-        aria-label="Supply network region risk map"
+        aria-label="Supply network region risk diagram"
         className={styles.mapSvg}
         role="img"
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
@@ -80,53 +84,40 @@ export const RegionRiskMap = ({ network }: { network: DashboardNetwork }) => {
           >
             <path className={styles.mapRouteArrow} d="M0,0 L7,3.5 L0,7 Z" />
           </marker>
-          <pattern
-            height={40}
-            id="map-graticule"
-            patternUnits="userSpaceOnUse"
-            width={40}
-          >
-            <path
-              className={styles.mapGraticule}
-              d="M40 0 H0 V40"
-              fill="none"
-            />
-          </pattern>
         </defs>
 
         <rect
-          className={styles.mapOcean}
+          className={styles.mapCanvas}
           height={HEIGHT}
           rx={10}
           width={WIDTH}
           x={0}
           y={0}
         />
-        <rect
-          fill="url(#map-graticule)"
-          height={HEIGHT}
-          opacity={0.55}
-          width={WIDTH}
-          x={0}
-          y={0}
-        />
 
-        {/* Decorative landmasses aligned to the network frame — markers stay data-driven. */}
-        <path
-          className={styles.mapLand}
-          d="M40 118 C78 72 138 58 198 78 C248 96 286 138 338 152 C392 168 430 148 468 118 C500 92 536 84 574 100 L574 250 C500 268 420 278 348 262 C270 244 196 228 128 214 C84 204 48 172 40 118 Z"
+        {/* Soft zone labels — layout guides only, not geography claims. */}
+        <text className={styles.mapZoneLabel} x={90} y={28}>
+          Americas
+        </text>
+        <text className={styles.mapZoneLabel} x={420} y={28}>
+          Europe
+        </text>
+        <text className={styles.mapZoneLabel} x={720} y={28}>
+          Asia
+        </text>
+        <line
+          className={styles.mapZoneRule}
+          x1={280}
+          x2={280}
+          y1={40}
+          y2={270}
         />
-        <path
-          className={styles.mapLand}
-          d="M468 70 C508 48 556 52 596 78 C632 102 646 138 628 168 C602 156 568 138 536 122 C502 104 480 88 468 70 Z"
-        />
-        <path
-          className={styles.mapLand}
-          d="M620 90 C670 58 760 54 820 88 C858 112 872 158 848 188 C808 170 752 148 700 132 C662 118 636 106 620 90 Z"
-        />
-        <path
-          className={styles.mapLandAccent}
-          d="M96 198 C132 186 168 190 198 204 C168 214 132 214 96 198 Z"
+        <line
+          className={styles.mapZoneRule}
+          x1={560}
+          x2={560}
+          y1={40}
+          y2={270}
         />
 
         {network.routes.map((route) => {
@@ -159,20 +150,20 @@ export const RegionRiskMap = ({ network }: { network: DashboardNetwork }) => {
                   className={`${styles.mapRing} ${severityPinClass(region.activeSeverity)}`}
                   cx={point.x}
                   cy={point.y}
-                  r={11}
+                  r={12}
                 />
               )}
               <circle
                 className={`${styles.mapPin} ${severityPinClass(region.activeSeverity)}`}
                 cx={point.x}
                 cy={point.y}
-                r={5}
+                r={6}
               />
               <text
                 className={styles.mapLabel}
                 textAnchor="middle"
                 x={point.x}
-                y={point.y - 14}
+                y={point.y - 16}
               >
                 {region.label}
               </text>
