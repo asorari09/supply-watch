@@ -22,6 +22,7 @@
     "db:push": "dotenv -e .env -- supabase db push",
     "db:types": "supabase gen types typescript --linked > src/lib/db/database.types.ts",
     "db:seed": "dotenv -e .env -- tsx scripts/seed.ts",
+    "seed:demo": "dotenv -e .env -- tsx scripts/seed-demo.ts",
     "db:verify": "dotenv -e .env -- tsx scripts/db-verify.ts"
   },
   "lint-staged": {

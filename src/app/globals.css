@@ -1,13 +1,23 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --canvas: #07131e;
+  --surface: #0d202e;
+  --surface-raised: #102938;
+  --ink: #e7f0f3;
+  --muted: #91a6b3;
+  --line: #244150;
+  --navy-900: #082233;
+  --navy-800: #10364b;
+  --teal-700: #3cc9b6;
+  --teal-100: #103e3c;
+  --amber-700: #f1af4c;
+  --amber-100: #493313;
+  --red-700: #ff7a7a;
+  --red-100: #51272c;
+  --blue-700: #70b7eb;
+  --blue-100: #173b58;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --shadow-panel: 0 18px 40px rgb(0 0 0 / 18%);
 }
 
 html,
@@ -17,9 +27,9 @@ body {
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--ink);
+  background: var(--canvas);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,8 +45,7 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+code,
+.tabular-nums {
+  font-family: var(--font-geist-mono), monospace;
 }
