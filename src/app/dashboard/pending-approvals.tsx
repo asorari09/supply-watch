@@ -126,7 +126,7 @@ export const PendingApprovals = ({
       </span>
     </div>
     {drafts.length === 0 ? (
-      <EmptyState>No supplier communications await review.</EmptyState>
+      <EmptyState>Clear — no drafts awaiting review.</EmptyState>
     ) : (
       <div className={styles.draftList}>
         {drafts.map((draft) => (

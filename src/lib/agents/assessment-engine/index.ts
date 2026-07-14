@@ -84,7 +84,12 @@ export const runAssessment = async (
       result.alerts.map((alert) => ({
         risk_flag_id: alert.flagId,
         level: alert.level,
-        message_template: `Assessment ${alert.level} alert`,
+        message_template:
+          alert.level === "critical"
+            ? "Critical shortfall — IP well below adjusted ROP"
+            : alert.level === "warning"
+              ? "Warning — IP below adjusted ROP"
+              : "Info — IP crossed reorder threshold",
         created_at: createdAt,
         delivered_via: "dashboard",
       })),

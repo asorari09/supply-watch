@@ -50,7 +50,7 @@ const SignalFeed = ({ signals }: Pick<DashboardData, "signals">) => (
       <span className={styles.count}>{signals.length} recent</span>
     </div>
     {signals.length === 0 ? (
-      <EmptyState>No normalized signals have been recorded yet.</EmptyState>
+      <EmptyState>Clear — no active signals in the recent window.</EmptyState>
     ) : (
       <ul className={styles.signalList}>
         {signals.map((signal) => (
@@ -87,11 +87,12 @@ const SignalFeed = ({ signals }: Pick<DashboardData, "signals">) => (
 const AtRiskCard = ({ risk }: { risk: DashboardRisk }) => {
   const leadTimeAfter =
     risk.leadTimeBase === null ? null : risk.leadTimeBase + risk.leadTimeDelta;
+  const noReorder = risk.recommendedQty === 0;
   return (
     <article className={`${styles.riskCard} ${styles[`risk${risk.severity}`]}`}>
       <div className={styles.riskHeader}>
         <div>
-          <p className={styles.eyebrow}>At-risk SKU</p>
+          <p className={styles.eyebrow}>Exposed SKU</p>
           <h3>{risk.sku}</h3>
         </div>
         <span
@@ -113,37 +114,44 @@ const AtRiskCard = ({ risk }: { risk: DashboardRisk }) => {
         </span>
       </div>
       <div className={styles.deltaGrid}>
-        <div>
+        <div className={styles.deltaLeadTime}>
           <span>Lead time</span>
           <strong>
             {risk.leadTimeBase === null ? "—" : `${risk.leadTimeBase}d`}
+            <b aria-hidden="true">→</b>
+            {leadTimeAfter === null ? "—" : `${leadTimeAfter}d`}
           </strong>
-          <b aria-hidden="true">→</b>
-          <strong>{leadTimeAfter === null ? "—" : `${leadTimeAfter}d`}</strong>
         </div>
-        <div>
+        <div className={styles.deltaMetric}>
           <span>Reorder point</span>
-          <strong className={styles.adjustedRop}>{risk.rop ?? "—"}</strong>
-          <small>adjusted</small>
+          <strong className={styles.adjustedRop}>
+            {risk.rop ?? "—"}
+            <small>adjusted</small>
+          </strong>
         </div>
-        <div className={styles.safetyStock}>
+        <div className={`${styles.deltaMetric} ${styles.safetyStock}`}>
           <span>Safety stock</span>
           <strong>{risk.ss ?? "—"}</strong>
         </div>
       </div>
       <div className={styles.riskFooter}>
         <p className={styles.inventoryMetric}>
-          On-hand {risk.onHand ?? "—"} · Inventory position{" "}
-          {risk.inventoryPosition ?? "—"}
+          On-hand {risk.onHand ?? "—"}
+          <span aria-hidden="true"> · </span>
+          IP {risk.inventoryPosition ?? "—"}
         </p>
-        {risk.recommendedQty === 0 ? (
-          <p className={styles.noReorder}>✓ No reorder needed — monitoring</p>
+        {noReorder ? (
+          <p className={styles.noReorder}>
+            <span className={styles.noReorderLabel}>Monitoring</span>
+            No reorder needed — inventory covers adjusted ROP
+          </p>
         ) : (
           <div className={styles.recommendationBlock}>
             <span>Recommend</span>
-            <strong className={styles.recommendationMetric}>
-              {risk.recommendedQty ?? "—"} <em>units</em>
-            </strong>
+            <p className={styles.recommendationMetric}>
+              <strong>{risk.recommendedQty ?? "—"}</strong>
+              <em>units</em>
+            </p>
           </div>
         )}
       </div>
@@ -175,7 +183,7 @@ const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
         <span className={styles.count}>{alerts.length} recent</span>
       </div>
       {alerts.length === 0 ? (
-        <EmptyState>No alert thresholds have been crossed.</EmptyState>
+        <EmptyState>All clear — no threshold crossings.</EmptyState>
       ) : (
         <ul className={styles.alertList}>
           {visibleAlerts.map((alert) => (
@@ -190,7 +198,7 @@ const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
                   >
                     {alert.level}
                   </span>
-                  {alert.message}
+                  <span className={styles.alertMessage}>{alert.message}</span>
                   {alertCount(alert) > 1 ? (
                     <span className={styles.alertDuplicateCount}>
                       ×{alertCount(alert)}
@@ -220,7 +228,7 @@ const TickLogPanel = ({ ticks }: Pick<DashboardData, "ticks">) => (
       <span className={styles.count}>{ticks.length} logged</span>
     </div>
     {ticks.length === 0 ? (
-      <EmptyState>The first scheduled tick will appear here.</EmptyState>
+      <EmptyState>Waiting for the first scheduled tick.</EmptyState>
     ) : (
       <div className={styles.tickTable}>
         <div className={styles.tickHead}>
@@ -232,9 +240,12 @@ const TickLogPanel = ({ ticks }: Pick<DashboardData, "ticks">) => (
         {ticks.map((tick) => (
           <div className={styles.tickRow} key={tick.id}>
             <div>
-              <strong>{tick.triggerSource}</strong>
+              <strong>
+                {tick.triggerSource}
+                <span className={styles.tickMode}>{tick.mode}</span>
+              </strong>
               <small className={styles.metadata}>
-                <ModeBadge mode={tick.mode} /> {formatTimestamp(tick.clockNow)}
+                {formatTimestamp(tick.clockNow)}
               </small>
             </div>
             <code>{tick.counts}</code>
@@ -254,7 +265,7 @@ export default async function DashboardPage() {
     <main className={styles.dashboard}>
       <header className={styles.topbar}>
         <div>
-          <p className={styles.kicker}>Supply disruption response</p>
+          <p className={styles.kicker}>Supply Watch</p>
           <h1>Risk operations console</h1>
           <p className={styles.subhead}>
             Deterministic inventory decisions, surfaced for human review.
@@ -275,7 +286,7 @@ export default async function DashboardPage() {
         </div>
         {data.risks.length === 0 ? (
           <EmptyState>
-            No open risk flags. The deterministic engine will surface exposure
+            All clear — no open exposure flags. The engine will surface hits
             here.
           </EmptyState>
         ) : (

@@ -31,10 +31,8 @@ export const InjectDisruption = () => {
         onClick={inject}
         type="button"
       >
-        <span>
-          {isPending ? "Injecting scenario…" : "Inject synthetic disruption"}
-        </span>
-        <small>Demo · replay</small>
+        <span>{isPending ? "Injecting scenario…" : "Demo · replay"}</span>
+        <small>Inject synthetic disruption</small>
       </button>
       {message === null ? null : (
         <p className={styles.injectMessage}>{message}</p>
