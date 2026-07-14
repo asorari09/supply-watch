@@ -24,7 +24,10 @@ export const extractWithLlm = async (
   const result = await completeNewsExtraction(deps.client, prompt);
   if (!result.ok || result.content === undefined) return null;
   try {
-    return extractionSchema.parse(JSON.parse(result.content));
+    const trimmed = result.content.trim();
+    const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+    const jsonText = fenced?.[1] ?? trimmed;
+    return extractionSchema.parse(JSON.parse(jsonText));
   } catch {
     return null;
   }
