@@ -1,8 +1,9 @@
 .dashboard {
   animation: consoleFade 0.35s ease both;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 18px 20px 40px;
+  margin: 0;
+  max-width: none;
+  padding: 16px 24px 40px;
+  width: 100%;
 }
 
 @keyframes consoleFade {
@@ -25,38 +26,23 @@
 }
 
 .topbar {
+  align-items: center;
   border-bottom: 1px solid var(--line);
   margin-bottom: 14px;
   padding: 0 0 12px;
 }
 
-.kicker,
-.eyebrow {
-  color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .topbar h1 {
   color: var(--ink-strong);
-  font-size: clamp(1.35rem, 2.4vw, 1.7rem);
+  font-size: 1.2rem;
   font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-  margin: 4px 0;
-}
-
-.subhead {
-  color: var(--muted);
-  font-size: 0.82rem;
-  line-height: 1.35;
-  max-width: 36rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
 }
 
 .headerControls {
-  align-items: flex-end;
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -183,7 +169,7 @@
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin-top: 2px;
+  margin: 0;
 }
 
 .sectionTitle > span,
@@ -210,43 +196,39 @@
 }
 
 .actionRowItem {
-  align-items: center;
   border-bottom: 1px solid var(--line);
-  border-left: 3px solid var(--accent);
-  display: grid;
-  gap: 0 12px;
-  grid-template-columns: 132px 132px minmax(0, 1fr) 168px 148px;
-  height: 64px;
-  max-height: 64px;
-  min-height: 64px;
-  overflow: hidden;
-  padding: 0 12px;
-  transition: background 0.12s ease;
 }
 
-.actionRowItem:nth-child(even) {
+.actionRowItem:nth-child(even) .actionRowTrigger {
   background: #fafbfc;
-}
-
-.actionRowItem:hover {
-  background: #f3f4f9;
 }
 
 .actionRowItem:last-child {
   border-bottom: 0;
 }
 
-.actionhigh {
-  border-left-color: var(--critical);
+.actionRowTrigger {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: 0 14px;
+  grid-template-columns: 148px 140px minmax(0, 1fr);
+  height: 44px;
+  max-height: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  text-align: left;
+  transition: background 0.12s ease;
+  width: 100%;
 }
 
-.actionmed {
-  border-left-color: var(--warning);
-}
-
-.actionlow,
-.actionunknown {
-  border-left-color: var(--accent);
+.actionRowTrigger:hover,
+.actionRowItemOpen .actionRowTrigger {
+  background: #f0f2f7;
 }
 
 .actionSkuCell {
@@ -274,7 +256,7 @@
   color: var(--ink);
   font-family:
     var(--font-manrope), "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -283,77 +265,81 @@
   white-space: nowrap;
 }
 
-.actionReason {
+.actionCause {
   color: var(--ink-strong);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   line-height: 1.25;
   margin: 0;
   min-width: 0;
   overflow: hidden;
-}
-
-.actionReasonCell {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.actionBasis {
-  color: var(--muted);
-  font-size: 0.66rem;
-  font-weight: 650;
-  line-height: 1.2;
-  margin: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.actionMetrics {
-  color: var(--muted);
-  font-size: 0.7rem;
-  font-variant-numeric: tabular-nums;
-  font-weight: 650;
-  line-height: 1.2;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: clip;
-  white-space: nowrap;
-  width: 168px;
-}
-
-.actionPills {
-  align-items: center;
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 4px;
-  justify-content: flex-end;
-  min-width: 0;
-  overflow: hidden;
-  width: 148px;
-}
-
-.exposureBadge,
-.disruptionBadge {
-  background: var(--surface-raised);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--ink-strong);
-  flex: 0 1 auto;
-  font-size: 0.58rem;
-  line-height: 1.2;
-  max-width: 88px;
-  overflow: hidden;
-  padding: 2px 6px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.pillOverflow {
+.actionDetail {
+  background: #f7f8fb;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px 16px;
+}
+
+.actionDetailBasis {
+  color: var(--ink-strong);
+  font-size: 0.8rem;
+  font-weight: 650;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.actionDetailGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+}
+
+.actionDetailField {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.actionDetailField dt {
   color: var(--muted);
-  flex: 0 0 auto;
   font-size: 0.62rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.actionDetailField dd {
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
+  margin: 4px 0 0;
+}
+
+.actionDetailPlain {
+  display: grid;
+  gap: 4px;
+}
+
+.actionDetailLabel {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.actionDetailPlain p {
+  color: var(--ink-strong);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 0;
 }
 
 .chipRow {
@@ -375,21 +361,18 @@
   white-space: nowrap;
 }
 
-.severityhigh,
-.alertcritical {
+.severityhigh {
   background: var(--critical-fill);
   color: var(--critical-text);
 }
 
-.severitymed,
-.alertwarning {
+.severitymed {
   background: var(--warning-fill);
   color: var(--warning-text);
 }
 
 .severitylow,
-.severityunknown,
-.alertinfo {
+.severityunknown {
   background: var(--info-fill);
   color: var(--info-text);
 }
@@ -503,11 +486,6 @@
   border-bottom: 0;
 }
 
-.degradedSignal {
-  border-left: 2px solid var(--warning);
-  padding-left: 8px;
-}
-
 .signalTopline {
   gap: 6px;
   justify-content: flex-start;
@@ -571,27 +549,64 @@ details:not([open]) > summary.toggleCleared {
   margin-bottom: 0;
 }
 
-.alertList li {
-  display: flex;
-  gap: 8px;
+.alertRow {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 88px minmax(0, 1fr);
+  min-height: 44px;
+  padding: 6px 0;
 }
 
-.alertRail {
-  border-radius: 999px;
-  flex: 0 0 3px;
-  width: 3px;
+.alertSeverity {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+  min-width: 0;
 }
 
-.alertRail.alertcritical {
+.alertDot {
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 6px;
+  width: 6px;
+}
+
+.alertDotcritical {
   background: var(--critical);
 }
 
-.alertRail.alertwarning {
+.alertDotwarning {
   background: var(--warning);
 }
 
-.alertRail.alertinfo {
-  background: var(--accent);
+.alertDotinfo {
+  background: var(--muted);
+}
+
+.alertTag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.alertTagcritical {
+  color: var(--critical-text);
+}
+
+.alertTagwarning {
+  color: var(--warning-text);
+}
+
+.alertTaginfo {
+  color: var(--muted);
+}
+
+.alertBody {
+  min-width: 0;
 }
 
 .alertList p {
@@ -601,6 +616,7 @@ details:not([open]) > summary.toggleCleared {
   font-size: 0.78rem;
   gap: 6px;
   line-height: 1.3;
+  margin: 0;
 }
 
 .alertMessage {
@@ -615,7 +631,7 @@ details:not([open]) > summary.toggleCleared {
 
 .alertList .metadata {
   display: block;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 .systemStatusBar {
@@ -1249,7 +1265,7 @@ details:not([open]) > summary.toggleCleared {
 
 @media (max-width: 800px) {
   .dashboard {
-    padding: 20px 14px 48px;
+    padding: 16px 14px 48px;
   }
 
   .topbar {
@@ -1265,11 +1281,12 @@ details:not([open]) > summary.toggleCleared {
   .kpiRow,
   .supportGrid,
   .metricRow,
-  .draft {
+  .draft,
+  .actionDetailGrid {
     grid-template-columns: 1fr;
   }
 
-  .actionRowItem {
+  .actionRowTrigger {
     grid-template-columns: 1fr;
     height: auto;
     max-height: none;
@@ -1277,12 +1294,8 @@ details:not([open]) > summary.toggleCleared {
     padding: 10px 12px;
   }
 
-  .actionMetrics,
-  .actionPills {
-    width: auto;
-  }
-
-  .actionPills {
-    justify-content: flex-start;
+  .alertRow {
+    grid-template-columns: 1fr;
+    min-height: 0;
   }
 }

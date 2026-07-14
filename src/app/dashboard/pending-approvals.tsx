@@ -2,7 +2,10 @@
 
 import { useState, useTransition } from "react";
 
-import { formatActionMetricsInline } from "@/lib/dashboard/copy";
+import {
+  formatActionMetricsInline,
+  formatDraftSubject,
+} from "@/lib/dashboard/copy";
 
 import {
   approveDraftAction,
@@ -141,10 +144,7 @@ export const PendingApprovals = ({
   return (
     <section className={styles.panel} aria-labelledby="approvals-title">
       <div className={styles.panelHeader}>
-        <div>
-          <p className={styles.eyebrow}>Your review</p>
-          <h2 id="approvals-title">Communications awaiting your approval</h2>
-        </div>
+        <h2 id="approvals-title">Communications awaiting your approval</h2>
         <span className={styles.count}>{waiting} waiting</span>
       </div>
       {drafts.length === 0 ? (
@@ -160,7 +160,7 @@ export const PendingApprovals = ({
                     Recommended order: {draft.recommendedQty ?? "-"} units
                   </p>
                 </div>
-                <h3>{draft.subject}</h3>
+                <h3>{formatDraftSubject(draft.subject)}</h3>
                 <p className={styles.draftBodyClamp}>{draft.body}</p>
                 <p className={styles.draftMetrics}>
                   {formatActionMetricsInline({

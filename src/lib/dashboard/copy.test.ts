@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  formatActionCauseLine,
   formatActionHeadline,
   formatActionMetricsInline,
   formatActionOrderTitle,
   formatActionSupportCompact,
+  formatAffectedSummary,
+  formatDraftSubject,
   formatModeLabel,
   formatProjectedStock,
   formatRegionLabel,
@@ -49,7 +52,7 @@ describe("dashboard copy helpers", () => {
       rop: 1404,
     });
     expect(compact).toBe(
-      "Flood · lead time 28→35d · stock 105 vs reorder 1404",
+      "Flood · lead time 28->35d · stock 105 vs reorder 1404",
     );
     expect(compact).toContain("28");
     expect(compact).toContain("35");
@@ -114,5 +117,33 @@ describe("dashboard copy helpers", () => {
         rop: 100,
       }),
     ).toBe("Low: stock 100% above reorder point");
+  });
+
+  it("formats collapsed action cause and affected summaries", () => {
+    expect(
+      formatActionCauseLine({
+        disruptionTypes: ["storm"],
+        leadTimeBase: 21,
+        leadTimeDelta: 7,
+      }),
+    ).toBe("Storm, lead time 21->28d");
+    expect(
+      formatAffectedSummary({
+        exposureTypes: ["supplier_region", "shipment_route"],
+        disruptionTypes: ["port_closure"],
+      }),
+    ).toBe("supplier location, shipping route, port closure");
+  });
+
+  it("normalizes demo draft subjects to Simulated:", () => {
+    expect(formatDraftSubject("Synthetic demo: storm")).toBe(
+      "Simulated: storm",
+    );
+    expect(formatDraftSubject("Simulated scenario: flood")).toBe(
+      "Simulated: flood",
+    );
+    expect(formatDraftSubject("Simulated: labor strike")).toBe(
+      "Simulated: labor strike",
+    );
   });
 });

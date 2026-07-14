@@ -34,7 +34,6 @@ export const SeverityDonut = ({
 
   return (
     <div className={styles.donutCard}>
-      <p className={styles.eyebrow}>At-risk mix</p>
       <h3>SKUs by severity</h3>
       {total === 0 ? (
         <p className={styles.emptyState}>No at-risk SKUs right now.</p>

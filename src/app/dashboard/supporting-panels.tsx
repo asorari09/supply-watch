@@ -27,7 +27,7 @@ const SignalItem = ({
 }: {
   signal: DashboardData["signals"][number];
 }) => (
-  <li className={signal.status === "degraded" ? styles.degradedSignal : ""}>
+  <li>
     <div className={styles.signalTopline}>
       <span
         className={`${styles.chip} ${styles[`severity${signal.severity}`]}`}
@@ -73,10 +73,7 @@ export const WhatsHappeningPanel = ({
   return (
     <section className={styles.panel} aria-labelledby="whats-happening-title">
       <div className={styles.panelHeader}>
-        <div>
-          <p className={styles.eyebrow}>Context</p>
-          <h2 id="whats-happening-title">What&apos;s happening</h2>
-        </div>
+        <h2 id="whats-happening-title">What&apos;s happening</h2>
         <span className={styles.count}>{ongoing.length} ongoing</span>
       </div>
       {ongoing.length === 0 ? (
@@ -153,10 +150,7 @@ export const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
   return (
     <section className={styles.panel} aria-labelledby="alerts-title">
       <div className={styles.panelHeader}>
-        <div>
-          <p className={styles.eyebrow}>Attention</p>
-          <h2 id="alerts-title">Alerts</h2>
-        </div>
+        <h2 id="alerts-title">Alerts</h2>
         <span className={styles.count}>{alerts.length} recent</span>
       </div>
       {alerts.length === 0 ? (
@@ -164,17 +158,20 @@ export const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
       ) : (
         <ul className={styles.alertList}>
           {visibleAlerts.map((alert) => (
-            <li key={alert.id}>
-              <span
-                className={`${styles.alertRail} ${styles[`alert${alert.level}`]}`}
-              />
-              <div>
+            <li className={styles.alertRow} key={alert.id}>
+              <span className={styles.alertSeverity}>
+                <i
+                  aria-hidden="true"
+                  className={`${styles.alertDot} ${styles[`alertDot${alert.level}`]}`}
+                />
+                <span
+                  className={`${styles.alertTag} ${styles[`alertTag${alert.level}`]}`}
+                >
+                  {formatAlertLevel(alert.level)}
+                </span>
+              </span>
+              <div className={styles.alertBody}>
                 <p>
-                  <span
-                    className={`${styles.chip} ${styles[`alert${alert.level}`]}`}
-                  >
-                    {formatAlertLevel(alert.level)}
-                  </span>
                   <span className={styles.alertMessage}>
                     {formatAlertMessage({
                       level: alert.level,

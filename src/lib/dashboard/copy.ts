@@ -179,7 +179,7 @@ export const formatActionSupportCompact = (input: {
   const lead =
     input.leadTimeBase === null
       ? `lead time +${input.leadTimeDelta}d`
-      : `lead time ${input.leadTimeBase}→${input.leadTimeBase + input.leadTimeDelta}d`;
+      : `lead time ${input.leadTimeBase}->${input.leadTimeBase + input.leadTimeDelta}d`;
   const stock =
     input.inventoryPosition === null
       ? "stock -"
@@ -189,6 +189,43 @@ export const formatActionSupportCompact = (input: {
   const reorder = input.rop === null ? "reorder -" : `reorder ${input.rop}`;
   return `${disruption} · ${lead} · ${stock} vs ${reorder}`;
 };
+
+/** Collapsed action-row cause: disruption + lead-time delta only. */
+export const formatActionCauseLine = (input: {
+  disruptionTypes: readonly string[];
+  leadTimeBase: number | null;
+  leadTimeDelta: number;
+}): string => {
+  const disruption =
+    input.disruptionTypes.length === 0
+      ? "Disruption"
+      : formatDisruptionType(input.disruptionTypes[0] ?? "disruption");
+  if (input.leadTimeBase === null)
+    return `${disruption}, lead time +${input.leadTimeDelta}d`;
+  return `${disruption}, lead time ${input.leadTimeBase}->${input.leadTimeBase + input.leadTimeDelta}d`;
+};
+
+/** Plain labeled exposures + disruption types for expanded action detail. */
+export const formatAffectedSummary = (input: {
+  exposureTypes: readonly ("supplier_region" | "shipment_route")[];
+  disruptionTypes: readonly string[];
+}): string => {
+  const exposures = input.exposureTypes.map((exposure) =>
+    exposure === "supplier_region" ? "supplier location" : "shipping route",
+  );
+  const disruptions = input.disruptionTypes.map((type) =>
+    formatDisruptionType(type).toLowerCase(),
+  );
+  const parts = [...exposures, ...disruptions];
+  if (parts.length === 0) return "none listed";
+  return parts.join(", ");
+};
+
+/** Normalize demo draft titles shown in the approvals queue. */
+export const formatDraftSubject = (subject: string): string =>
+  subject
+    .replace(/^Synthetic demo:\s*/i, "Simulated: ")
+    .replace(/^Simulated scenario:\s*/i, "Simulated: ");
 
 export const formatActionMetricsInline = (input: {
   ss: number | null;
