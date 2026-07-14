@@ -2,7 +2,7 @@
   animation: consoleFade 0.35s ease both;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 28px 24px 64px;
+  padding: 18px 20px 40px;
 }
 
 @keyframes consoleFade {
@@ -26,8 +26,8 @@
 
 .topbar {
   border-bottom: 1px solid var(--line);
-  margin-bottom: 24px;
-  padding: 0 0 20px;
+  margin-bottom: 14px;
+  padding: 0 0 12px;
 }
 
 .kicker,
@@ -41,17 +41,17 @@
 
 .topbar h1 {
   color: var(--ink-strong);
-  font-size: clamp(1.65rem, 3vw, 2.1rem);
+  font-size: clamp(1.35rem, 2.4vw, 1.7rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.15;
-  margin: 6px 0;
+  margin: 4px 0;
 }
 
 .subhead {
   color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.45;
+  font-size: 0.82rem;
+  line-height: 1.35;
   max-width: 36rem;
 }
 
@@ -139,9 +139,9 @@
 
 .kpiRow {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .kpiTile {
@@ -149,41 +149,41 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-panel);
-  padding: 16px 14px;
+  padding: 8px 10px;
 }
 
 .kpiTile span {
   color: var(--muted);
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.64rem;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .kpiTile strong {
   color: var(--ink);
   display: block;
-  font-size: 1.85rem;
+  font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: -0.04em;
-  margin-top: 8px;
+  margin-top: 2px;
 }
 
 .sectionBlock {
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .sectionTitle {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .sectionTitle h2,
 .panel h2 {
   color: var(--ink-strong);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 .sectionTitle > span,
@@ -427,20 +427,20 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-panel);
   min-width: 0;
-  padding: 16px;
+  padding: 12px;
 }
 
 .panelHeader {
   border-bottom: 1px solid var(--line);
-  margin-bottom: 4px;
-  padding-bottom: 12px;
+  margin-bottom: 2px;
+  padding-bottom: 8px;
 }
 
 .emptyState {
   color: var(--muted);
-  font-size: 0.86rem;
-  line-height: 1.45;
-  padding: 18px 0 6px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  padding: 10px 0 4px;
 }
 
 .supportGrid {
