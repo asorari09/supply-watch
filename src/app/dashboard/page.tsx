@@ -1,10 +1,29 @@
 import type { Metadata } from "next";
 
 import {
+  formatActionHeadline,
+  formatActionSupport,
+  formatAlertLevel,
+  formatAlertMessage,
+  formatDisruptionType,
+  formatExposureType,
+  formatModeLabel,
+  formatMonitoringLine,
+  formatProjectedStockShort,
+  formatRegionList,
+  formatSeverityLabel,
+  formatSignalSource,
+  formatSignalStatus,
+  formatTimeOnly,
+  formatTimestamp,
+  severityRank,
+} from "@/lib/dashboard/copy";
+import {
   loadDashboard,
   type DashboardAlert,
   type DashboardData,
   type DashboardRisk,
+  type DashboardTick,
 } from "@/lib/dashboard/load-dashboard";
 
 import { InjectDisruption } from "./inject-disruption";
@@ -13,149 +32,184 @@ import { PendingApprovals } from "./pending-approvals";
 
 export const metadata: Metadata = {
   title: "Supply Risk Console",
-  description: "Operational supply disruption monitoring dashboard.",
+  description: "Live supply-chain risk monitoring and recommended actions.",
 };
 
 export const dynamic = "force-dynamic";
 
-const formatTimestamp = (value: string): string =>
-  new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(Date.parse(value));
-
-const severityLabel = (severity: DashboardRisk["severity"]): string =>
-  severity === "med" ? "medium" : severity;
+const EmptyState = ({ children }: { children: React.ReactNode }) => (
+  <p className={styles.emptyState}>{children}</p>
+);
 
 const ModeBadge = ({ mode }: { mode: "live" | "replay" }) => (
   <span
     className={`${styles.modeBadge} ${mode === "replay" ? styles.replay : ""}`}
   >
     <span aria-hidden="true" className={styles.modeDot} />
-    MODE: {mode}
+    {formatModeLabel(mode)}
   </span>
 );
 
-const EmptyState = ({ children }: { children: React.ReactNode }) => (
-  <p className={styles.emptyState}>{children}</p>
-);
-
-const SignalFeed = ({ signals }: Pick<DashboardData, "signals">) => (
-  <section className={styles.panel} aria-labelledby="signal-feed-title">
-    <div className={styles.panelHeader}>
-      <div>
-        <p className={styles.eyebrow}>External conditions</p>
-        <h2 id="signal-feed-title">Signal feed</h2>
-      </div>
-      <span className={styles.count}>{signals.length} recent</span>
-    </div>
-    {signals.length === 0 ? (
-      <EmptyState>Clear — no active signals in the recent window.</EmptyState>
-    ) : (
-      <ul className={styles.signalList}>
-        {signals.map((signal) => (
-          <li
-            key={signal.id}
-            className={
-              signal.status === "degraded" ? styles.degradedSignal : ""
-            }
-          >
-            <div className={styles.signalTopline}>
-              <span
-                className={`${styles.chip} ${styles[`severity${signal.severity}`]}`}
-              >
-                {severityLabel(signal.severity)}
-              </span>
-              <span className={styles.source}>{signal.source}</span>
-              <time className={styles.signalTime} dateTime={signal.detectedAt}>
-                {formatTimestamp(signal.detectedAt)}
-              </time>
-            </div>
-            <p>{signal.regions.join(" · ") || "No region supplied"}</p>
-            <span
-              className={`${styles.status} ${signal.status === "degraded" ? styles.statusDegraded : ""}`}
-            >
-              {signal.status}
-            </span>
-          </li>
-        ))}
-      </ul>
-    )}
-  </section>
-);
-
-const AtRiskCard = ({ risk }: { risk: DashboardRisk }) => {
-  const leadTimeAfter =
-    risk.leadTimeBase === null ? null : risk.leadTimeBase + risk.leadTimeDelta;
-  const noReorder = risk.recommendedQty === 0;
+const KpiBar = ({ data }: { data: DashboardData }) => {
+  const needsReorder = data.risks.filter(
+    (risk) => (risk.recommendedQty ?? 0) > 0,
+  ).length;
+  const awaitingApproval = data.drafts.filter(
+    (draft) => draft.status === "pending_approval",
+  ).length;
+  const readyToSend = data.drafts.filter(
+    (draft) => draft.status === "approved",
+  ).length;
+  const activeDisruptions = data.signals.filter(
+    (signal) => signal.status === "active",
+  ).length;
+  const tiles = [
+    { label: "SKUs at risk", value: data.risks.length },
+    { label: "Needs reorder now", value: needsReorder },
+    { label: "Awaiting your approval", value: awaitingApproval },
+    { label: "Approved, ready to send", value: readyToSend },
+    { label: "Active disruptions", value: activeDisruptions },
+  ];
   return (
-    <article className={`${styles.riskCard} ${styles[`risk${risk.severity}`]}`}>
-      <div className={styles.riskHeader}>
+    <section aria-label="Executive summary" className={styles.kpiRow}>
+      {tiles.map((tile) => (
+        <div className={styles.kpiTile} key={tile.label}>
+          <span>{tile.label}</span>
+          <strong>{tile.value}</strong>
+        </div>
+      ))}
+    </section>
+  );
+};
+
+const ActionCard = ({ risk }: { risk: DashboardRisk }) => (
+  <article
+    className={`${styles.actionCard} ${styles[`action${risk.severity}`]}`}
+  >
+    <h3 className={styles.actionHeadline}>
+      {formatActionHeadline({
+        sku: risk.sku,
+        recommendedQty: risk.recommendedQty,
+        severity: risk.severity,
+      })}
+    </h3>
+    <p className={styles.actionSupport}>
+      {formatActionSupport({
+        disruptionTypes: risk.disruptionTypes,
+        leadTimeBase: risk.leadTimeBase,
+        leadTimeDelta: risk.leadTimeDelta,
+        inventoryPosition: risk.inventoryPosition,
+        rop: risk.rop,
+      })}
+    </p>
+    <div className={styles.chipRow}>
+      <span className={`${styles.chip} ${styles[`severity${risk.severity}`]}`}>
+        {formatSeverityLabel(risk.severity)}
+      </span>
+      {risk.exposureTypes.map((exposureType) => (
+        <span className={styles.exposureBadge} key={exposureType}>
+          {formatExposureType(exposureType)}
+        </span>
+      ))}
+      {risk.disruptionTypes.map((type) => (
+        <span className={styles.disruptionBadge} key={type}>
+          {formatDisruptionType(type)}
+        </span>
+      ))}
+    </div>
+    <dl className={styles.metricRow}>
+      <div>
+        <dt>Safety stock buffer</dt>
+        <dd>{risk.ss ?? "—"}</dd>
+      </div>
+      <div>
+        <dt>Reorder point</dt>
+        <dd>{risk.rop ?? "—"}</dd>
+      </div>
+      <div>
+        <dt>Projected stock</dt>
+        <dd>{formatProjectedStockShort(risk.inventoryPosition)}</dd>
+      </div>
+    </dl>
+  </article>
+);
+
+const MonitoringCard = ({ risk }: { risk: DashboardRisk }) => (
+  <article className={styles.monitorCard}>
+    <span className={styles.monitorLabel}>Monitoring — no action needed</span>
+    {formatMonitoringLine({
+      sku: risk.sku,
+      disruptionTypes: risk.disruptionTypes,
+    })}
+  </article>
+);
+
+const SignalItem = ({
+  signal,
+}: {
+  signal: DashboardData["signals"][number];
+}) => (
+  <li className={signal.status === "degraded" ? styles.degradedSignal : ""}>
+    <div className={styles.signalTopline}>
+      <span
+        className={`${styles.chip} ${styles[`severity${signal.severity}`]}`}
+      >
+        {formatSeverityLabel(signal.severity)}
+      </span>
+      <span className={styles.source}>{formatSignalSource(signal.source)}</span>
+      <time className={styles.signalTime} dateTime={signal.detectedAt}>
+        {formatTimestamp(signal.detectedAt)}
+      </time>
+    </div>
+    <p>{formatRegionList(signal.regions)}</p>
+    <span
+      className={`${styles.status} ${
+        signal.status === "resolved"
+          ? styles.statusCleared
+          : signal.status === "degraded"
+            ? styles.statusDegraded
+            : ""
+      }`}
+    >
+      {formatSignalStatus(signal.status)}
+    </span>
+  </li>
+);
+
+const WhatsHappening = ({ signals }: Pick<DashboardData, "signals">) => {
+  const ongoing = signals.filter((signal) => signal.status !== "resolved");
+  const cleared = signals.filter((signal) => signal.status === "resolved");
+  return (
+    <section className={styles.panel} aria-labelledby="whats-happening-title">
+      <div className={styles.panelHeader}>
         <div>
-          <p className={styles.eyebrow}>Exposed SKU</p>
-          <h3>{risk.sku}</h3>
+          <p className={styles.eyebrow}>Context</p>
+          <h2 id="whats-happening-title">What&apos;s happening</h2>
         </div>
-        <span
-          className={`${styles.chip} ${styles[`severity${risk.severity}`]}`}
-        >
-          {severityLabel(risk.severity)}
-        </span>
+        <span className={styles.count}>{ongoing.length} ongoing</span>
       </div>
-      <div className={styles.exposureBadges}>
-        {risk.exposureTypes.map((exposureType) => (
-          <span className={styles.exposureBadge} key={exposureType}>
-            {exposureType.replace("_", " ")}
-          </span>
-        ))}
-        <span className={styles.disruptionBadge}>
-          {risk.disruptionTypes
-            .map((type) => type.replaceAll("_", " "))
-            .join(" · ")}
-        </span>
-      </div>
-      <div className={styles.deltaGrid}>
-        <div className={styles.deltaLeadTime}>
-          <span>Lead time</span>
-          <strong>
-            {risk.leadTimeBase === null ? "—" : `${risk.leadTimeBase}d`}
-            <b aria-hidden="true">→</b>
-            {leadTimeAfter === null ? "—" : `${leadTimeAfter}d`}
-          </strong>
-        </div>
-        <div className={styles.deltaMetric}>
-          <span>Reorder point</span>
-          <strong className={styles.adjustedRop}>
-            {risk.rop ?? "—"}
-            <small>adjusted</small>
-          </strong>
-        </div>
-        <div className={`${styles.deltaMetric} ${styles.safetyStock}`}>
-          <span>Safety stock</span>
-          <strong>{risk.ss ?? "—"}</strong>
-        </div>
-      </div>
-      <div className={styles.riskFooter}>
-        <p className={styles.inventoryMetric}>
-          On-hand {risk.onHand ?? "—"}
-          <span aria-hidden="true"> · </span>
-          IP {risk.inventoryPosition ?? "—"}
-        </p>
-        {noReorder ? (
-          <p className={styles.noReorder}>
-            <span className={styles.noReorderLabel}>Monitoring</span>
-            No reorder needed — inventory covers adjusted ROP
-          </p>
-        ) : (
-          <div className={styles.recommendationBlock}>
-            <span>Recommend</span>
-            <p className={styles.recommendationMetric}>
-              <strong>{risk.recommendedQty ?? "—"}</strong>
-              <em>units</em>
-            </p>
-          </div>
-        )}
-      </div>
-    </article>
+      {ongoing.length === 0 ? (
+        <EmptyState>All clear — no ongoing weather or news events.</EmptyState>
+      ) : (
+        <ul className={styles.signalList}>
+          {ongoing.map((signal) => (
+            <SignalItem key={signal.id} signal={signal} />
+          ))}
+        </ul>
+      )}
+      {cleared.length === 0 ? null : (
+        <details>
+          <summary className={styles.toggleCleared}>
+            Show cleared ({cleared.length})
+          </summary>
+          <ul className={styles.signalList}>
+            {cleared.map((signal) => (
+              <SignalItem key={signal.id} signal={signal} />
+            ))}
+          </ul>
+        </details>
+      )}
+    </section>
   );
 };
 
@@ -177,13 +231,13 @@ const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
     <section className={styles.panel} aria-labelledby="alerts-title">
       <div className={styles.panelHeader}>
         <div>
-          <p className={styles.eyebrow}>Threshold crossings</p>
+          <p className={styles.eyebrow}>Attention</p>
           <h2 id="alerts-title">Alerts</h2>
         </div>
         <span className={styles.count}>{alerts.length} recent</span>
       </div>
       {alerts.length === 0 ? (
-        <EmptyState>All clear — no threshold crossings.</EmptyState>
+        <EmptyState>All clear — no stock alerts right now.</EmptyState>
       ) : (
         <ul className={styles.alertList}>
           {visibleAlerts.map((alert) => (
@@ -196,9 +250,14 @@ const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
                   <span
                     className={`${styles.chip} ${styles[`alert${alert.level}`]}`}
                   >
-                    {alert.level}
+                    {formatAlertLevel(alert.level)}
                   </span>
-                  <span className={styles.alertMessage}>{alert.message}</span>
+                  <span className={styles.alertMessage}>
+                    {formatAlertMessage({
+                      level: alert.level,
+                      sku: alert.sku,
+                    })}
+                  </span>
                   {alertCount(alert) > 1 ? (
                     <span className={styles.alertDuplicateCount}>
                       ×{alertCount(alert)}
@@ -206,7 +265,7 @@ const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
                   ) : null}
                 </p>
                 <small className={styles.metadata}>
-                  {alert.sku ?? "Unlinked SKU"} ·{" "}
+                  {alert.sku ?? "Product link unavailable"} ·{" "}
                   {formatTimestamp(alert.createdAt)}
                 </small>
               </div>
@@ -218,57 +277,55 @@ const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
   );
 };
 
-const TickLogPanel = ({ ticks }: Pick<DashboardData, "ticks">) => (
-  <section className={styles.panel} aria-labelledby="ticks-title">
-    <div className={styles.panelHeader}>
-      <div>
-        <p className={styles.eyebrow}>Pipeline health</p>
-        <h2 id="ticks-title">Recent ticks</h2>
-      </div>
-      <span className={styles.count}>{ticks.length} logged</span>
-    </div>
-    {ticks.length === 0 ? (
-      <EmptyState>Waiting for the first scheduled tick.</EmptyState>
-    ) : (
-      <div className={styles.tickTable}>
-        <div className={styles.tickHead}>
-          <span>Run</span>
-          <span>Counts</span>
-          <span>Duration</span>
-          <span>Cost</span>
-        </div>
-        {ticks.map((tick) => (
-          <div className={styles.tickRow} key={tick.id}>
-            <div>
-              <strong>
-                {tick.triggerSource}
-                <span className={styles.tickMode}>{tick.mode}</span>
-              </strong>
-              <small className={styles.metadata}>
-                {formatTimestamp(tick.clockNow)}
-              </small>
-            </div>
-            <code>{tick.counts}</code>
-            <span>{tick.durationMs}ms</span>
-            <span>${tick.estimatedCostUsd.toFixed(4)}</span>
-          </div>
-        ))}
-      </div>
-    )}
-  </section>
-);
+const SystemStatus = ({
+  ticks,
+  mode,
+}: {
+  ticks: DashboardTick[];
+  mode: "live" | "replay";
+}) => {
+  const latest = ticks[0];
+  if (latest === undefined) {
+    return (
+      <p className={styles.systemStatus}>
+        <strong>System status:</strong> Waiting for the first check.
+      </p>
+    );
+  }
+  const costNote =
+    latest.estimatedCostUsd === 0
+      ? " · $0 — no external AI cost"
+      : ` · External AI cost $${latest.estimatedCostUsd.toFixed(4)}`;
+  return (
+    <p className={styles.systemStatus}>
+      <strong>System status:</strong> Last checked{" "}
+      {formatTimeOnly(latest.clockNow)} · Monitoring {formatModeLabel(mode)}
+      {costNote}
+    </p>
+  );
+};
 
 export default async function DashboardPage() {
   const data = await loadDashboard();
   const mode = data.ticks[0]?.mode ?? "live";
+  const actionRisks = data.risks
+    .filter((risk) => (risk.recommendedQty ?? 0) > 0)
+    .sort(
+      (left, right) =>
+        severityRank(right.severity) - severityRank(left.severity),
+    );
+  const monitoringRisks = data.risks.filter(
+    (risk) => (risk.recommendedQty ?? 0) === 0,
+  );
+
   return (
     <main className={styles.dashboard}>
       <header className={styles.topbar}>
         <div>
           <p className={styles.kicker}>Supply Watch</p>
-          <h1>Risk operations console</h1>
+          <h1>Supply Risk Console</h1>
           <p className={styles.subhead}>
-            Deterministic inventory decisions, surfaced for human review.
+            Live supply-chain risk monitoring and recommended actions.
           </p>
         </div>
         <div className={styles.headerControls}>
@@ -276,33 +333,70 @@ export default async function DashboardPage() {
           <ModeBadge mode={mode} />
         </div>
       </header>
-      <section className={styles.heroSection} aria-labelledby="risk-title">
+
+      <KpiBar data={data} />
+
+      <section className={styles.sectionBlock} aria-labelledby="action-title">
         <div className={styles.sectionTitle}>
           <div>
-            <p className={styles.eyebrow}>Priority queue</p>
-            <h2 id="risk-title">At-risk inventory</h2>
+            <p className={styles.eyebrow}>What to do</p>
+            <h2 id="action-title">Action needed</h2>
           </div>
-          <span>{data.risks.length} open flags</span>
+          <span>{actionRisks.length} items</span>
         </div>
-        {data.risks.length === 0 ? (
+        {actionRisks.length === 0 ? (
           <EmptyState>
-            All clear — no open exposure flags. The engine will surface hits
-            here.
+            Nothing to order right now. Exposed products with healthy stock
+            appear under monitoring below.
           </EmptyState>
         ) : (
-          <div className={styles.riskGrid}>
-            {data.risks.map((risk) => (
-              <AtRiskCard key={risk.id} risk={risk} />
+          <div className={styles.actionList}>
+            {actionRisks.map((risk) => (
+              <ActionCard key={risk.id} risk={risk} />
             ))}
           </div>
         )}
       </section>
-      <div className={styles.consoleGrid}>
-        <SignalFeed signals={data.signals} />
-        <AlertsPanel alerts={data.alerts} />
+
+      {monitoringRisks.length === 0 ? null : (
+        <section
+          className={styles.sectionBlock}
+          aria-labelledby="monitoring-title"
+        >
+          <div className={styles.sectionTitle}>
+            <div>
+              <p className={styles.eyebrow}>Watchlist</p>
+              <h2 id="monitoring-title">Monitoring — no action needed</h2>
+            </div>
+            <span>{monitoringRisks.length} items</span>
+          </div>
+          <div className={styles.monitorList}>
+            {monitoringRisks.map((risk) => (
+              <MonitoringCard key={risk.id} risk={risk} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className={styles.sectionBlock}>
         <PendingApprovals drafts={data.drafts} />
-        <TickLogPanel ticks={data.ticks} />
-      </div>
+      </section>
+
+      <section className={styles.sectionBlock} aria-label="Supporting evidence">
+        <div className={styles.sectionTitle}>
+          <div>
+            <p className={styles.eyebrow}>Background</p>
+            <h2>Supporting details</h2>
+          </div>
+        </div>
+        <div className={styles.supportGrid}>
+          <WhatsHappening signals={data.signals} />
+          <AlertsPanel alerts={data.alerts} />
+        </div>
+        <div className={styles.supportingNote}>
+          <SystemStatus ticks={data.ticks} mode={mode} />
+        </div>
+      </section>
     </main>
   );
 }

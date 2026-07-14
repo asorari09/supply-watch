@@ -18,7 +18,7 @@ export const InjectDisruption = () => {
         return;
       }
       setMessage(
-        `Injected: ${result.summary.signals} signals → ${result.summary.flags} flags → ${result.summary.alerts} alerts`,
+        `Demo loaded: ${result.summary.flags} products flagged, ${result.summary.pendingDrafts} message ready for review.`,
       );
     });
   };
@@ -31,8 +31,8 @@ export const InjectDisruption = () => {
         onClick={inject}
         type="button"
       >
-        <span>{isPending ? "Injecting scenario…" : "Demo · replay"}</span>
-        <small>Inject synthetic disruption</small>
+        <span>{isPending ? "Running demo…" : "Run demo scenario"}</span>
+        <small>Demo · not live data</small>
       </button>
       {message === null ? null : (
         <p className={styles.injectMessage}>{message}</p>

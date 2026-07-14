@@ -1,23 +1,26 @@
 :root {
-  --canvas: #07131e;
-  --surface: #0d202e;
-  --surface-raised: #102938;
-  --ink: #e7f0f3;
-  --muted: #91a6b3;
-  --line: #244150;
-  --navy-900: #082233;
-  --navy-800: #10364b;
-  --teal-700: #3cc9b6;
-  --teal-100: #103e3c;
-  --amber-700: #f1af4c;
-  --amber-100: #493313;
-  --red-700: #ff7a7a;
-  --red-100: #51272c;
-  --blue-700: #70b7eb;
-  --blue-100: #173b58;
+  --canvas: #f7f8fa;
+  --surface: #ffffff;
+  --surface-raised: #f3f4f7;
+  --ink: #2b2f42;
+  --ink-strong: #3a3f58;
+  --muted: #8a90a2;
+  --line: #e6e8ec;
+  --accent: #7b75e8;
+  --accent-fill: #e8e7fb;
+  --accent-text: #4540a8;
+  --positive: #3ba55d;
+  --warning: #f5a623;
+  --warning-fill: #fdf0d5;
+  --warning-text: #b26b00;
+  --critical: #e5484d;
+  --critical-fill: #fde8e9;
+  --critical-text: #b42318;
+  --info-fill: #e8e7fb;
+  --info-text: #4540a8;
   --radius-sm: 8px;
-  --radius-md: 14px;
-  --shadow-panel: 0 18px 40px rgb(0 0 0 / 18%);
+  --radius-md: 12px;
+  --shadow-panel: 0 1px 2px rgb(43 47 66 / 6%), 0 4px 12px rgb(43 47 66 / 4%);
 }
 
 html,

@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Supply Disruption Response",
-  description: "Operational supply disruption monitoring.",
+  title: "Supply Risk Console",
+  description: "Live supply-chain risk monitoring and recommended actions.",
 };
 
 export default function RootLayout({

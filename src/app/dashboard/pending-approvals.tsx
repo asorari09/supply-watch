@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 
+import { formatProjectedStockShort } from "@/lib/dashboard/copy";
+
 import {
   approveDraftAction,
   rejectDraftAction,
@@ -41,8 +43,10 @@ const DraftControls = ({ draft }: { draft: PendingApprovalDraft }) => {
         setStatus(result.status);
         setMessage(
           result.status === "sent"
-            ? "Mock send recorded."
-            : `Draft ${result.status}.`,
+            ? "Sent — demo delivery logged."
+            : result.status === "approved"
+              ? "Approved — ready to send."
+              : "Rejected — no send.",
         );
       } else {
         setMessage(result.error);
@@ -51,9 +55,9 @@ const DraftControls = ({ draft }: { draft: PendingApprovalDraft }) => {
   };
 
   if (status === "rejected")
-    return <p className={styles.draftTerminal}>Rejected — terminal state</p>;
+    return <p className={styles.draftTerminal}>Rejected — no send</p>;
   if (status === "sent")
-    return <p className={styles.draftSent}>Sent — mock transport recorded</p>;
+    return <p className={styles.draftSent}>Sent — demo delivery logged</p>;
   if (status === "approved")
     return (
       <div className={styles.draftControls}>
@@ -64,7 +68,7 @@ const DraftControls = ({ draft }: { draft: PendingApprovalDraft }) => {
           onClick={() => execute(() => sendDraftAction(draft.id))}
           type="button"
         >
-          {isPending ? "Sending…" : "Send mock email"}
+          {isPending ? "Sending…" : "Send"}
         </button>
         {message === null ? null : (
           <p className={styles.actionMessage}>{message}</p>
@@ -75,7 +79,7 @@ const DraftControls = ({ draft }: { draft: PendingApprovalDraft }) => {
   return (
     <div className={styles.draftControls}>
       <label className={styles.editLabel} htmlFor={`draft-body-${draft.id}`}>
-        Review and edit body
+        Edit message before approving
       </label>
       <textarea
         className={styles.draftTextarea}
@@ -113,52 +117,56 @@ export const PendingApprovals = ({
   drafts,
 }: {
   drafts: PendingApprovalDraft[];
-}) => (
-  <section className={styles.panel} aria-labelledby="approvals-title">
-    <div className={styles.panelHeader}>
-      <div>
-        <p className={styles.eyebrow}>Human review queue</p>
-        <h2 id="approvals-title">Pending approvals</h2>
+}) => {
+  const waiting = drafts.filter(
+    (draft) => draft.status === "pending_approval",
+  ).length;
+  return (
+    <section className={styles.panel} aria-labelledby="approvals-title">
+      <div className={styles.panelHeader}>
+        <div>
+          <p className={styles.eyebrow}>Your review</p>
+          <h2 id="approvals-title">Communications awaiting your approval</h2>
+        </div>
+        <span className={styles.count}>{waiting} waiting</span>
       </div>
-      <span className={styles.count}>
-        {drafts.filter((draft) => draft.status === "pending_approval").length}{" "}
-        waiting
-      </span>
-    </div>
-    {drafts.length === 0 ? (
-      <EmptyState>Clear — no drafts awaiting review.</EmptyState>
-    ) : (
-      <div className={styles.draftList}>
-        {drafts.map((draft) => (
-          <article className={styles.draft} key={draft.id}>
-            <div>
-              <p className={styles.draftSku}>{draft.sku}</p>
-              <h3>{draft.subject}</h3>
-              <p className={styles.draftBody}>{draft.body}</p>
-              <span className={styles.tone}>{draft.tone}</span>
-            </div>
-            <dl>
+      {drafts.length === 0 ? (
+        <EmptyState>No supplier messages waiting for review.</EmptyState>
+      ) : (
+        <div className={styles.draftList}>
+          {drafts.map((draft) => (
+            <article className={styles.draft} key={draft.id}>
               <div>
-                <dt>Safety stock</dt>
-                <dd>{draft.ss ?? "—"}</dd>
+                <p className={styles.draftSku}>{draft.sku}</p>
+                <h3>{draft.subject}</h3>
+                <p className={styles.draftBody}>{draft.body}</p>
+                <p className={styles.draftReco}>
+                  Recommended order: {draft.recommendedQty ?? "—"} units
+                </p>
               </div>
-              <div>
-                <dt>ROP</dt>
-                <dd>{draft.rop ?? "—"}</dd>
-              </div>
-              <div>
-                <dt>Inventory position</dt>
-                <dd>{draft.inventoryPosition ?? "—"}</dd>
-              </div>
-              <div>
-                <dt>Recommendation</dt>
-                <dd>{draft.recommendedQty ?? "—"} units</dd>
-              </div>
-            </dl>
-            <DraftControls draft={draft} />
-          </article>
-        ))}
-      </div>
-    )}
-  </section>
-);
+              <dl>
+                <div>
+                  <dt>Safety stock buffer</dt>
+                  <dd>{draft.ss ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt>Reorder point</dt>
+                  <dd>{draft.rop ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt>Projected stock</dt>
+                  <dd>{formatProjectedStockShort(draft.inventoryPosition)}</dd>
+                </div>
+                <div>
+                  <dt>Recommended order</dt>
+                  <dd>{draft.recommendedQty ?? "—"} units</dd>
+                </div>
+              </dl>
+              <DraftControls draft={draft} />
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+};
