@@ -70,6 +70,17 @@ export interface DashboardAlert {
   message: string;
   createdAt: string;
   sku: string | null;
+  ss: number | null;
+  rop: number | null;
+  inventoryPosition: number | null;
+  recommendedQty: number | null;
+  leadTimeBase: number | null;
+  leadTimeDelta: number | null;
+  signalId: string | null;
+  disruptionType: string | null;
+  regions: string[];
+  signalSeverity: "low" | "med" | "high" | "unknown" | null;
+  signalInFeed: boolean;
 }
 
 export interface DashboardTick {
@@ -284,6 +295,24 @@ export const loadDashboard = async (): Promise<DashboardData> => {
     const flagById = new Map(
       [...flagRows, ...linkedFlagRows].map((flag) => [flag.id, flag]),
     );
+    const linkedSignalIds = [
+      ...new Set(
+        [...flagById.values()]
+          .map((flag) => flag.signal_id)
+          .filter((signalId) => !signalById.has(signalId)),
+      ),
+    ];
+    if (linkedSignalIds.length > 0) {
+      const linkedSignals = await client
+        .from("signals")
+        .select()
+        .in("id", linkedSignalIds);
+      if (linkedSignals.error !== null) return emptyDashboardData();
+      for (const signal of linkedSignals.data ?? []) {
+        signalById.set(signal.id, signal);
+        feedSignalRows.push(signal);
+      }
+    }
     const flagsBySkuId = new Map<string, (typeof flagRows)[number][]>();
     for (const flag of flagRows) {
       const grouped = flagsBySkuId.get(flag.sku_id) ?? [];
@@ -422,15 +451,36 @@ export const loadDashboard = async (): Promise<DashboardData> => {
       drafts: draftsMapped,
       alerts: alertRows.map((alert) => {
         const flag = flagById.get(alert.risk_flag_id);
+        const sku = flag === undefined ? undefined : skuById.get(flag.sku_id);
+        const supplier =
+          sku === undefined ? undefined : supplierById.get(sku.supplier_id);
+        const recommendation =
+          flag === undefined
+            ? undefined
+            : (recommendationByFlagId.get(flag.id) ??
+              recommendationBySkuId.get(flag.sku_id));
+        const signal =
+          flag === undefined ? undefined : signalById.get(flag.signal_id);
+        const signalInFeed =
+          signal !== undefined &&
+          feedSignalRows.some((row) => row.id === signal.id);
         return {
           id: alert.id,
           level: alert.level,
           message: alert.message_template,
           createdAt: alert.created_at,
-          sku:
-            flag === undefined
-              ? null
-              : (skuById.get(flag.sku_id)?.sku ?? flag.sku_id),
+          sku: sku?.sku ?? (flag === undefined ? null : flag.sku_id),
+          ss: recommendation?.ss ?? null,
+          rop: recommendation?.rop ?? null,
+          inventoryPosition: recommendation?.inventory_position ?? null,
+          recommendedQty: recommendation?.recommended_qty ?? null,
+          leadTimeBase: supplier?.lead_time_days_base ?? null,
+          leadTimeDelta: flag?.computed_lead_time_delta ?? null,
+          signalId: signal?.id ?? null,
+          disruptionType: signal?.disruption_type ?? null,
+          regions: signal?.affected_regions ?? [],
+          signalSeverity: signal?.severity ?? null,
+          signalInFeed,
         };
       }),
       ticks: tickRows.map((tick) => ({

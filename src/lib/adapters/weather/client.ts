@@ -84,12 +84,18 @@ export const buildOpenMeteoUrl = (
   return url.toString();
 };
 
+const resolveBaseUrl = (value: string | undefined): string =>
+  value !== undefined && value.trim().length > 0
+    ? value.trim()
+    : defaultBaseUrl;
+
 export const createOpenMeteoClient = (
   options: OpenMeteoClientOptions = {},
 ): WeatherClient => {
   const fetchImpl = options.fetchImpl ?? fetch;
-  const baseUrl =
-    options.baseUrl ?? process.env.OPEN_METEO_BASE_URL ?? defaultBaseUrl;
+  const baseUrl = resolveBaseUrl(
+    options.baseUrl ?? process.env.OPEN_METEO_BASE_URL,
+  );
   const timeoutMs =
     options.timeoutMs ??
     readPositiveInteger(process.env.WEATHER_TIMEOUT_MS, defaultTimeoutMs);

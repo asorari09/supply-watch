@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   formatAlertLevel,
   formatAlertMessage,
+  formatAlertRuleReason,
+  formatAlertTriggerLine,
   formatDisruptionType,
   formatRegionList,
   formatSeverityLabel,
@@ -136,10 +138,24 @@ const SignalEvidenceDetail = ({ signal }: { signal: DashboardSignal }) => {
 const SignalItem = ({ signal }: { signal: DashboardSignal }) => {
   const [expanded, setExpanded] = useState(false);
   const detailId = `signal-detail-${signal.id}`;
+  const anchorId = `signal-${signal.id}`;
+
+  useEffect(() => {
+    const openFromHash = (): void => {
+      if (window.location.hash !== `#${anchorId}`) return;
+      setExpanded(true);
+      const details = document.getElementById(anchorId)?.closest("details");
+      if (details !== null && details !== undefined) details.open = true;
+    };
+    openFromHash();
+    window.addEventListener("hashchange", openFromHash);
+    return () => window.removeEventListener("hashchange", openFromHash);
+  }, [anchorId]);
 
   return (
     <li
       className={`${styles.signalRowItem} ${expanded ? styles.signalRowItemOpen : ""}`}
+      id={anchorId}
     >
       <button
         aria-controls={detailId}
@@ -264,6 +280,131 @@ export const WhatsHappeningPanel = ({
   );
 };
 
+const AlertDerivationDetail = ({ alert }: { alert: DashboardAlert }) => {
+  const leadBase = alert.leadTimeBase;
+  const leadAfter =
+    leadBase === null || alert.leadTimeDelta === null
+      ? null
+      : leadBase + alert.leadTimeDelta;
+
+  return (
+    <div className={styles.alertDetail}>
+      <p className={styles.deterministicLabel}>Deterministic assessment</p>
+      <p className={styles.alertRuleLine}>
+        {formatAlertRuleReason({
+          level: alert.level,
+          signalSeverity: alert.signalSeverity,
+          inventoryPosition: alert.inventoryPosition,
+          rop: alert.rop,
+        })}
+      </p>
+      <div className={styles.alertTriggerBlock}>
+        <p className={styles.alertEvidenceMeta}>
+          {formatAlertTriggerLine({
+            disruptionType: alert.disruptionType,
+            regions: alert.regions,
+          })}
+        </p>
+        {alert.signalId !== null && alert.signalInFeed ? (
+          <a
+            className={styles.signalEvidenceLink}
+            href={`#signal-${alert.signalId}`}
+          >
+            view signal
+          </a>
+        ) : null}
+      </div>
+      <dl className={styles.signalDetailGrid}>
+        <div className={styles.signalDetailField}>
+          <dt>Lead time</dt>
+          <dd>
+            {leadBase === null || leadAfter === null
+              ? "-"
+              : `${leadBase}->${leadAfter}d`}
+          </dd>
+        </div>
+        <div className={styles.signalDetailField}>
+          <dt>Safety stock</dt>
+          <dd>{alert.ss ?? "-"}</dd>
+        </div>
+        <div className={styles.signalDetailField}>
+          <dt>Reorder point</dt>
+          <dd>{alert.rop ?? "-"}</dd>
+        </div>
+        <div className={styles.signalDetailField}>
+          <dt>Projected stock</dt>
+          <dd>{alert.inventoryPosition ?? "-"}</dd>
+        </div>
+        <div className={styles.signalDetailField}>
+          <dt>Recommended order</dt>
+          <dd>{alert.recommendedQty ?? "-"}</dd>
+        </div>
+      </dl>
+    </div>
+  );
+};
+
+const AlertItem = ({
+  alert,
+  duplicateCount,
+}: {
+  alert: DashboardAlert;
+  duplicateCount: number;
+}) => {
+  const [expanded, setExpanded] = useState(false);
+  const detailId = `alert-detail-${alert.id}`;
+
+  return (
+    <li
+      className={`${styles.alertRowItem} ${expanded ? styles.alertRowItemOpen : ""}`}
+    >
+      <button
+        aria-controls={detailId}
+        aria-expanded={expanded}
+        className={styles.alertRowTrigger}
+        onClick={() => setExpanded((current) => !current)}
+        type="button"
+      >
+        <span className={styles.alertSeverity}>
+          <i
+            aria-hidden="true"
+            className={`${styles.alertDot} ${styles[`alertDot${alert.level}`]}`}
+          />
+          <span
+            className={`${styles.alertTag} ${styles[`alertTag${alert.level}`]}`}
+          >
+            {formatAlertLevel(alert.level)}
+          </span>
+        </span>
+        <div className={styles.alertBody}>
+          <p>
+            <span className={styles.alertMessage}>
+              {formatAlertMessage({
+                level: alert.level,
+                sku: alert.sku,
+              })}
+            </span>
+            {duplicateCount > 1 ? (
+              <span className={styles.alertDuplicateCount}>
+                ×{duplicateCount}
+              </span>
+            ) : null}
+          </p>
+          <small className={styles.metadata}>
+            {alert.sku ?? "Product link unavailable"} ·{" "}
+            {formatTimestamp(alert.createdAt)}
+          </small>
+        </div>
+      </button>
+      {expanded ? (
+        <div className={styles.alertDetailWrap} id={detailId}>
+          <AlertDerivationDetail alert={alert} />
+        </div>
+      ) : null}
+    </li>
+  );
+};
+
 export const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
   const visibleAlerts = alerts.filter(
     (alert, index) =>
@@ -289,38 +430,11 @@ export const AlertsPanel = ({ alerts }: { alerts: DashboardAlert[] }) => {
       ) : (
         <ul className={styles.alertList}>
           {visibleAlerts.map((alert) => (
-            <li className={styles.alertRow} key={alert.id}>
-              <span className={styles.alertSeverity}>
-                <i
-                  aria-hidden="true"
-                  className={`${styles.alertDot} ${styles[`alertDot${alert.level}`]}`}
-                />
-                <span
-                  className={`${styles.alertTag} ${styles[`alertTag${alert.level}`]}`}
-                >
-                  {formatAlertLevel(alert.level)}
-                </span>
-              </span>
-              <div className={styles.alertBody}>
-                <p>
-                  <span className={styles.alertMessage}>
-                    {formatAlertMessage({
-                      level: alert.level,
-                      sku: alert.sku,
-                    })}
-                  </span>
-                  {alertCount(alert) > 1 ? (
-                    <span className={styles.alertDuplicateCount}>
-                      ×{alertCount(alert)}
-                    </span>
-                  ) : null}
-                </p>
-                <small className={styles.metadata}>
-                  {alert.sku ?? "Product link unavailable"} ·{" "}
-                  {formatTimestamp(alert.createdAt)}
-                </small>
-              </div>
-            </li>
+            <AlertItem
+              alert={alert}
+              duplicateCount={alertCount(alert)}
+              key={alert.id}
+            />
           ))}
         </ul>
       )}

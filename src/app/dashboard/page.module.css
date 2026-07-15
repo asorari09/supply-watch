@@ -694,13 +694,67 @@ details:not([open]) > summary.toggleCleared {
   margin-bottom: 0;
 }
 
-.alertRow {
+.alertRowItem {
+  list-style: none;
+}
+
+.alertRowTrigger {
   align-items: center;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
   display: grid;
+  font: inherit;
   gap: 10px;
   grid-template-columns: 88px minmax(0, 1fr);
   min-height: 44px;
-  padding: 6px 0;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.alertRowTrigger:hover .alertMessage,
+.alertRowItemOpen .alertMessage {
+  color: var(--accent-text);
+}
+
+.alertDetailWrap {
+  margin-top: 8px;
+  padding: 0 0 4px 0;
+}
+
+.alertDetail {
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+.deterministicLabel {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.alertRuleLine {
+  color: var(--ink-strong);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+
+.alertTriggerBlock {
+  margin-bottom: 8px;
+}
+
+.alertEvidenceMeta {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  margin: 0 0 4px;
 }
 
 .alertSeverity {
@@ -1050,6 +1104,7 @@ details:not([open]) > summary.toggleCleared {
 }
 
 .heroGrid {
+  align-items: stretch;
   display: grid;
   gap: 10px;
   grid-template-columns: minmax(0, 1.75fr) minmax(220px, 0.85fr);
@@ -1057,9 +1112,10 @@ details:not([open]) > summary.toggleCleared {
 }
 
 .heroSide {
-  align-content: start;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  min-height: 100%;
 }
 
 .mapFigure {
@@ -1067,6 +1123,7 @@ details:not([open]) > summary.toggleCleared {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-panel);
+  height: 100%;
   margin: 0;
   overflow: hidden;
   padding: 8px 8px 6px;
@@ -1356,9 +1413,11 @@ details:not([open]) > summary.toggleCleared {
 }
 
 .statChips {
-  display: grid;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   gap: 8px;
-  grid-template-columns: 1fr 1fr;
+  min-height: 0;
 }
 
 .statChip {
@@ -1366,7 +1425,12 @@ details:not([open]) > summary.toggleCleared {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-panel);
-  padding: 8px 10px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 72px;
+  padding: 10px 12px;
 }
 
 .statChip span {
@@ -1403,8 +1467,16 @@ details:not([open]) > summary.toggleCleared {
     grid-template-columns: 1fr;
   }
 
+  .heroSide {
+    min-height: 0;
+  }
+
   .statChips {
-    grid-template-columns: 1fr 1fr;
+    flex-direction: row;
+  }
+
+  .statChip {
+    min-height: 64px;
   }
 }
 
@@ -1439,7 +1511,7 @@ details:not([open]) > summary.toggleCleared {
     padding: 10px 12px;
   }
 
-  .alertRow {
+  .alertRowTrigger {
     grid-template-columns: 1fr;
     min-height: 0;
   }

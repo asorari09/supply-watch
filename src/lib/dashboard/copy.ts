@@ -119,6 +119,56 @@ export const formatAlertMessage = (input: {
   return `Watch: reorder threshold crossed for ${product}`;
 };
 
+/**
+ * Human text for the deterministic alertLevel branch in assess.ts.
+ * Uses real IP/ROP when present; otherwise falls back to signal-severity wording.
+ */
+export const formatAlertRuleReason = (input: {
+  level: "info" | "warning" | "critical";
+  signalSeverity: "low" | "med" | "high" | "unknown" | null;
+  inventoryPosition: number | null;
+  rop: number | null;
+}): string => {
+  const ip = input.inventoryPosition;
+  const rop = input.rop;
+  const hasNumbers = ip !== null && rop !== null;
+  const gap = hasNumbers ? rop - ip : null;
+  const deepGap = gap !== null && rop !== null && rop > 0 && gap >= 0.5 * rop;
+  const midGap = gap !== null && rop !== null && rop > 0 && gap >= 0.25 * rop;
+  const highSeverity = input.signalSeverity === "high";
+
+  if (input.level === "critical") {
+    if (deepGap && hasNumbers)
+      return `Critical: projected stock (${ip}) is 50% or more below reorder point (${rop})`;
+    if (highSeverity) return "Critical: linked disruption severity is high";
+    if (hasNumbers)
+      return `Critical: projected stock (${ip}) vs reorder point (${rop})`;
+    return "Critical: stock may run short (inventory metrics unavailable)";
+  }
+  if (input.level === "warning") {
+    if (midGap && hasNumbers)
+      return `Warning: projected stock (${ip}) is 25% or more below reorder point (${rop})`;
+    if (hasNumbers)
+      return `Warning: projected stock (${ip}) vs reorder point (${rop})`;
+    return "Warning: stock is tight (inventory metrics unavailable)";
+  }
+  if (hasNumbers)
+    return `Info: projected stock (${ip}) crossed below reorder point (${rop})`;
+  return "Info: reorder threshold crossed (inventory metrics unavailable)";
+};
+
+export const formatAlertTriggerLine = (input: {
+  disruptionType: string | null;
+  regions: readonly string[];
+}): string => {
+  const disruption =
+    input.disruptionType === null || input.disruptionType.length === 0
+      ? "Disruption"
+      : formatDisruptionType(input.disruptionType);
+  const region = formatRegionList(input.regions);
+  return `Triggered by: ${disruption} in ${region}`;
+};
+
 export const formatActionHeadline = (input: {
   sku: string;
   recommendedQty: number | null;
