@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 780" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="780" viewBox="0 0 1100 780" role="img" aria-labelledby="title desc">
   <title id="title">Supply Watch system design</title>
-  <desc id="desc">External weather and news feeds flow through a deterministic signal monitor and assessment engine into flags and recommendations. Only the communications agent uses an LLM, behind a human approval gate. An hourly cron drives the tick; a dashboard and eval harness observe the system.</desc>
+  <desc id="desc">External weather and news feeds flow through a deterministic signal monitor and assessment engine into flags and recommendations. Only the communications agent uses an LLM, behind a human approval gate.</desc>
 
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -9,142 +9,100 @@
     <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
     </marker>
-    <filter id="soft" x="-4%" y="-4%" width="108%" height="108%">
-      <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#0f172a" flood-opacity="0.08"/>
-    </filter>
   </defs>
 
   <rect width="1100" height="780" fill="#f8fafc"/>
 
-  <text x="36" y="40" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Supply Watch</text>
-  <text x="36" y="62" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13" fill="#475569">Signal ingest to deterministic reorder decisions; LLM drafting only behind human approval</text>
+  <text x="36" y="40" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Supply Watch</text>
+  <text x="36" y="62" font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#475569">Signal ingest to deterministic reorder decisions; LLM drafting only behind human approval</text>
 
-  <!-- Legend -->
-  <g transform="translate(700, 18)">
-    <rect x="0" y="0" width="360" height="52" rx="8" fill="#ffffff" stroke="#e2e8f0" filter="url(#soft)"/>
-    <text x="14" y="22" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#0f172a">Legend</text>
-    <rect x="14" y="30" width="12" height="12" rx="2" fill="#dbeafe" stroke="#2563eb"/>
-    <text x="32" y="40" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#334155">Deterministic</text>
-    <rect x="130" y="30" width="12" height="12" rx="2" fill="#fef3c7" stroke="#d97706"/>
-    <text x="148" y="40" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#334155">LLM (draft only)</text>
-    <rect x="268" y="30" width="12" height="12" rx="2" fill="#ffffff" stroke="#334155"/>
-    <text x="286" y="40" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#334155">Human</text>
-  </g>
+  <rect x="700" y="18" width="360" height="52" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="714" y="40" font-family="Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#0f172a">Legend</text>
+  <rect x="714" y="48" width="12" height="12" rx="2" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="732" y="58" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#334155">Deterministic</text>
+  <rect x="830" y="48" width="12" height="12" rx="2" fill="#fef3c7" stroke="#d97706"/>
+  <text x="848" y="58" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#334155">LLM (draft only)</text>
+  <rect x="968" y="48" width="12" height="12" rx="2" fill="#ffffff" stroke="#334155"/>
+  <text x="986" y="58" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#334155">Human</text>
 
-  <!-- Row 1 labels -->
-  <text x="130" y="100" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="0.06em">SOURCES</text>
-  <text x="370" y="100" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="0.06em">INGEST</text>
-  <text x="610" y="100" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="0.06em">STORE</text>
-  <text x="890" y="100" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="0.06em">DECIDE</text>
+  <text x="130" y="100" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b">SOURCES</text>
+  <text x="370" y="100" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b">INGEST</text>
+  <text x="610" y="100" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b">STORE</text>
+  <text x="909" y="100" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#64748b">DECIDE</text>
 
-  <!-- Sources -->
-  <g filter="url(#soft)">
-    <rect x="36" y="118" width="188" height="58" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-    <text x="130" y="142" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Open-Meteo</text>
-    <text x="130" y="160" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#64748b">Weather API</text>
-  </g>
-  <g filter="url(#soft)">
-    <rect x="36" y="190" width="188" height="58" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
-    <text x="130" y="214" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">RSS / news</text>
-    <text x="130" y="232" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#64748b">Disruption feeds</text>
-  </g>
+  <rect x="36" y="118" width="188" height="58" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="130" y="142" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Open-Meteo</text>
+  <text x="130" y="160" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#64748b">Weather API</text>
 
-  <!-- Signal Monitor -->
-  <g filter="url(#soft)">
-    <rect x="274" y="130" width="192" height="128" rx="10" fill="#dbeafe" stroke="#2563eb"/>
-    <text x="370" y="158" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Signal Monitor</text>
-    <text x="370" y="182" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Adapters + wire-to-domain</text>
-    <text x="370" y="200" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Zod validate</text>
-    <text x="370" y="218" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Degrade-not-throw ù dedupe</text>
-    <text x="370" y="242" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#2563eb">DETERMINISTIC</text>
-  </g>
+  <rect x="36" y="190" width="188" height="58" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="130" y="214" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">RSS / news</text>
+  <text x="130" y="232" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#64748b">Disruption feeds</text>
 
-  <!-- Signals store -->
-  <g filter="url(#soft)">
-    <rect x="516" y="154" width="188" height="80" rx="10" fill="#dbeafe" stroke="#2563eb"/>
-    <text x="610" y="186" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Signals store</text>
-    <text x="610" y="208" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Postgres / Supabase</text>
-  </g>
+  <rect x="274" y="130" width="192" height="128" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="370" y="158" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Signal Monitor</text>
+  <text x="370" y="182" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Adapters + wire-to-domain</text>
+  <text x="370" y="200" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Zod validate</text>
+  <text x="370" y="218" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Degrade-not-throw, dedupe</text>
+  <text x="370" y="242" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#2563eb">DETERMINISTIC</text>
 
-  <!-- Assessment Engine -->
-  <g filter="url(#soft)">
-    <rect x="754" y="118" width="310" height="152" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-    <text x="909" y="146" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Assessment Engine</text>
-    <text x="909" y="172" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Correlate: supplier-region + shipment-route</text>
-    <text x="909" y="192" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Reorder math: SS ù ROP ù EOQ</text>
-    <text x="909" y="216" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#b45309">ZERO LLM IN THIS STAGE</text>
-    <text x="909" y="244" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#2563eb">DETERMINISTIC DECISIONS</text>
-  </g>
+  <rect x="516" y="154" width="188" height="80" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="610" y="186" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Signals store</text>
+  <text x="610" y="208" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Postgres / Supabase</text>
 
-  <!-- Main flow arrows row 1 -->
+  <rect x="754" y="118" width="310" height="152" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="909" y="146" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Assessment Engine</text>
+  <text x="909" y="172" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Correlate: supplier-region + shipment-route</text>
+  <text x="909" y="192" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Reorder math: SS / ROP / EOQ</text>
+  <text x="909" y="216" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#b45309">ZERO LLM IN THIS STAGE</text>
+  <text x="909" y="244" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#2563eb">DETERMINISTIC DECISIONS</text>
+
   <path d="M224 147 H266" stroke="#64748b" stroke-width="1.75" fill="none" marker-end="url(#arrow)"/>
   <path d="M224 219 H266" stroke="#64748b" stroke-width="1.75" fill="none" marker-end="url(#arrow)"/>
   <path d="M466 194 H508" stroke="#64748b" stroke-width="1.75" fill="none" marker-end="url(#arrow)"/>
   <path d="M704 194 H746" stroke="#64748b" stroke-width="1.75" fill="none" marker-end="url(#arrow)"/>
 
-  <!-- Outputs -->
-  <g filter="url(#soft)">
-    <rect x="754" y="310" width="310" height="70" rx="10" fill="#dbeafe" stroke="#2563eb"/>
-    <text x="909" y="338" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Risk flags ù recommendations ù alerts</text>
-    <text x="909" y="360" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Signal-to-source evidence trail</text>
-  </g>
+  <rect x="754" y="310" width="310" height="70" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="909" y="338" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Risk flags, recommendations, alerts</text>
+  <text x="909" y="360" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Signal-to-source evidence trail</text>
   <path d="M909 270 V302" stroke="#64748b" stroke-width="1.75" fill="none" marker-end="url(#arrow)"/>
 
-  <!-- Comms + Approval -->
-  <g filter="url(#soft)">
-    <rect x="400" y="430" width="280" height="100" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
-    <text x="540" y="458" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Comms Agent</text>
-    <text x="540" y="480" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#92400e">The ONLY LLM stage</text>
-    <text x="540" y="498" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#92400e">Drafts pending_approval</text>
-    <text x="540" y="516" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#b45309">SCHEMA-LOCKED: subject / body / tone</text>
-  </g>
+  <rect x="400" y="430" width="280" height="100" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="540" y="458" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Comms Agent</text>
+  <text x="540" y="480" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#92400e">The ONLY LLM stage</text>
+  <text x="540" y="498" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#92400e">Drafts pending_approval</text>
+  <text x="540" y="516" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#b45309">SCHEMA-LOCKED: subject / body / tone</text>
 
-  <g filter="url(#soft)">
-    <rect x="754" y="440" width="310" height="80" rx="10" fill="#ffffff" stroke="#334155" stroke-width="1.5"/>
-    <text x="909" y="468" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Human approval gate</text>
-    <text x="909" y="490" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#475569">Edit ù approve ù reject</text>
-    <text x="909" y="508" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Fail-closed: re-check approval at send</text>
-  </g>
+  <rect x="754" y="440" width="310" height="80" rx="10" fill="#ffffff" stroke="#334155" stroke-width="1.5"/>
+  <text x="909" y="468" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Human approval gate</text>
+  <text x="909" y="490" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#475569">Edit / approve / reject</text>
+  <text x="909" y="508" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#0f172a">Fail-closed: re-check approval at send</text>
 
   <path d="M909 380 V422" stroke="#64748b" stroke-width="1.75" fill="none"/>
   <path d="M909 422 H688 V430" stroke="#64748b" stroke-width="1.75" fill="none" marker-end="url(#arrow)"/>
   <path d="M680 480 H746" stroke="#64748b" stroke-width="1.75" fill="none" marker-end="url(#arrow)"/>
 
-  <!-- Side panel: tick / dashboard / eval -->
-  <g filter="url(#soft)">
-    <rect x="36" y="300" width="320" height="88" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
-    <text x="196" y="328" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Hourly tick driver</text>
-    <text x="196" y="350" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#475569">Supabase pg_cron ? authed /api/tick/run</text>
-    <text x="196" y="370" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#334155">Postgres advisory lock (no double ticks)</text>
-  </g>
+  <rect x="36" y="300" width="320" height="88" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="196" y="328" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Hourly tick driver</text>
+  <text x="196" y="350" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#475569">Supabase pg_cron to authed /api/tick/run</text>
+  <text x="196" y="370" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#334155">Postgres advisory lock (no double ticks)</text>
 
-  <g filter="url(#soft)">
-    <rect x="36" y="408" width="320" height="72" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
-    <text x="196" y="436" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Next.js dashboard</text>
-    <text x="196" y="458" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#475569">Reads state ù inject demo ù approve / send</text>
-  </g>
+  <rect x="36" y="408" width="320" height="72" rx="10" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="196" y="436" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Next.js dashboard</text>
+  <text x="196" y="458" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#475569">Reads state, inject demo, approve / send</text>
 
-  <g filter="url(#soft)">
-    <rect x="36" y="500" width="320" height="96" rx="10" fill="#dbeafe" stroke="#2563eb"/>
-    <text x="196" y="528" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Replay / eval harness</text>
-    <text x="196" y="550" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Frozen clock ù hand-computed fixtures</text>
-    <text x="196" y="570" text-anchor="middle" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Formula-canary (sabotage-verified)</text>
-  </g>
+  <rect x="36" y="500" width="320" height="96" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="196" y="528" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Replay / eval harness</text>
+  <text x="196" y="550" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Frozen clock, hand-computed fixtures</text>
+  <text x="196" y="570" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#1e3a8a">Formula-canary (sabotage-verified)</text>
 
-  <!-- Dashed side connections -->
   <path d="M196 300 V258" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#arrowMuted)"/>
-  <text x="204" y="282" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#64748b">drives pipeline</text>
-
+  <text x="204" y="282" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#64748b">drives pipeline</text>
   <path d="M356 444 H392" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#arrowMuted)"/>
-
   <path d="M356 548 H909 V380" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3" fill="none" marker-end="url(#arrowMuted)"/>
-  <text x="620" y="540" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="10" fill="#64748b">validates Assessment Engine</text>
+  <text x="620" y="540" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#64748b">validates Assessment Engine</text>
 
-  <!-- Footnote strip -->
-  <g filter="url(#soft)">
-    <rect x="36" y="640" width="1028" height="100" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
-    <text x="56" y="672" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Design constraint</text>
-    <text x="56" y="696" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#334155">Most of the system is deterministic TypeScript. The LLM authors only subject, body, and tone for supplier drafts.</text>
-    <text x="56" y="718" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif" font-size="12" fill="#334155">Inventory data in this demo is synthetic; live weather and news feeds are real. Production would swap RSS for a commercial logistics API.</text>
-  </g>
+  <rect x="36" y="640" width="1028" height="100" rx="10" fill="#ffffff" stroke="#e2e8f0"/>
+  <text x="56" y="672" font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#0f172a">Design constraint</text>
+  <text x="56" y="696" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#334155">Most of the system is deterministic TypeScript. The LLM authors only subject, body, and tone for supplier drafts.</text>
+  <text x="56" y="718" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#334155">Inventory data in this demo is synthetic; live weather and news feeds are real. Production would swap RSS for a commercial logistics API.</text>
 </svg>

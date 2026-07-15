@@ -6,7 +6,7 @@ Supply-chain disruption monitoring that turns live weather/news signals into **d
 
 **Run demo scenario:** open the dashboard and click **Inject synthetic disruption** (or run `pnpm seed:demo` locally). That clears prior synthetic demo state, inserts a labeled scenario, and runs the real assessment pipeline.
 
-![Supply Watch system design](docs/architecture.svg)
+![Supply Watch system design](./docs/architecture.svg)
 
 ## What it does
 
@@ -39,7 +39,7 @@ Three stages: **Signal Monitor** (adapters, validate, degrade-not-throw) → **A
 
 Hourly Supabase `pg_cron` hits an authed `/api/tick/run` endpoint protected by a Postgres advisory lock. The Next.js dashboard reads persisted state. Frozen-clock replay validates the engine.
 
-Deep design: [`docs/supply-disruption-agent-MASTER-SPEC-v2-LOCKED.md`](docs/supply-disruption-agent-MASTER-SPEC-v2-LOCKED.md)
+Deep design: [`docs/specification.md`](./docs/specification.md)
 
 ## Tech stack
 

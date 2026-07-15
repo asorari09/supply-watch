@@ -1,5 +1,5 @@
 # AGENTS.md - Supply Disruption Response Agent (Project 2)
-Single source of truth: `docs/supply-disruption-agent-MASTER-SPEC-v2-LOCKED.md`. Read it before any task.
+Single source of truth: `docs/specification.md`. Read it before any task.
 If this file and the spec disagree, the spec wins - flag the conflict. Never edit anything under docs/.
 
 ## Canonical commands (don't guess)
