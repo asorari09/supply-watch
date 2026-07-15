@@ -117,8 +117,9 @@ export const loadDashboard = async (): Promise<DashboardData> => {
   try {
     const client = createSupabaseAdminClient();
     const [
-      feedSignals,
-      activeSignals,
+      ongoingSignals,
+      degradedSignals,
+      resolvedSignals,
       flags,
       recommendations,
       drafts,
@@ -128,12 +129,24 @@ export const loadDashboard = async (): Promise<DashboardData> => {
       suppliers,
       shipments,
     ] = await Promise.all([
+      // Ongoing first so live active rows are never crowded out by resolved demos.
       client
         .from("signals")
         .select()
+        .in("status", ["active", "stale"])
+        .order("detected_at", { ascending: false }),
+      client
+        .from("signals")
+        .select()
+        .eq("status", "degraded")
+        .order("detected_at", { ascending: false })
+        .limit(20),
+      client
+        .from("signals")
+        .select()
+        .eq("status", "resolved")
         .order("detected_at", { ascending: false })
         .limit(12),
-      client.from("signals").select().eq("status", "active"),
       client
         .from("risk_flags")
         .select()
@@ -165,8 +178,9 @@ export const loadDashboard = async (): Promise<DashboardData> => {
       client.from("shipments").select(),
     ]);
     const responses = [
-      feedSignals,
-      activeSignals,
+      ongoingSignals,
+      degradedSignals,
+      resolvedSignals,
       flags,
       recommendations,
       drafts,
@@ -179,8 +193,15 @@ export const loadDashboard = async (): Promise<DashboardData> => {
     if (responses.some((response) => response.error !== null))
       return emptyDashboardData();
 
-    const feedSignalRows = feedSignals.data ?? [];
-    const activeSignalRows = activeSignals.data ?? [];
+    const ongoingSignalRows = ongoingSignals.data ?? [];
+    const activeSignalRows = ongoingSignalRows.filter(
+      (signal) => signal.status === "active",
+    );
+    const feedSignalRows = [
+      ...ongoingSignalRows,
+      ...(degradedSignals.data ?? []),
+      ...(resolvedSignals.data ?? []),
+    ];
     const flagRows = flags.data ?? [];
     const recommendationRows = recommendations.data ?? [];
     const draftRows = drafts.data ?? [];
@@ -191,10 +212,7 @@ export const loadDashboard = async (): Promise<DashboardData> => {
     const shipmentRows = shipments.data ?? [];
 
     const signalById = new Map(
-      [...feedSignalRows, ...activeSignalRows].map((signal) => [
-        signal.id,
-        signal,
-      ]),
+      feedSignalRows.map((signal) => [signal.id, signal]),
     );
     const dataViewMode = detectDataViewMode({
       activeSignals: activeSignalRows.map((signal) => ({

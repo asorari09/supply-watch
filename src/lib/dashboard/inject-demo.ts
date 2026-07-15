@@ -3,11 +3,14 @@ import { randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { runAssessment } from "@/lib/agents/assessment-engine";
+import { isSyntheticDedupeHash } from "@/lib/dashboard/demo-mode";
 import { createSupabaseAdminClient } from "@/lib/db/admin-client";
 import type { Database } from "@/lib/db/database.types";
 import { toSignalRow } from "@/lib/db/mappers/signal.mapper";
 import { signalSchema } from "@/lib/domain";
 import { createRunContext } from "@/lib/runtime/run-context";
+
+const SYNTHETIC_DEMO_MODEL = "synthetic-demo-template";
 
 type SupplierRow = Database["public"]["Tables"]["suppliers"]["Row"];
 type ShipmentRow = Database["public"]["Tables"]["shipments"]["Row"];
@@ -85,6 +88,26 @@ const selectDemoSuppliers = (
 export const clearPriorSyntheticScenario = async (
   client: SupabaseClient<Database>,
 ): Promise<void> => {
+  // Always wipe demo template drafts (any flag/status), including leak leftovers.
+  const { data: templateDrafts, error: templateDraftsError } = await client
+    .from("comms_drafts")
+    .select("id")
+    .eq("model_used", SYNTHETIC_DEMO_MODEL);
+  requireSuccess(templateDraftsError);
+  const templateDraftIds = (templateDrafts ?? []).map((draft) => draft.id);
+  if (templateDraftIds.length > 0) {
+    const { error: approvalDeleteError } = await client
+      .from("approval_records")
+      .delete()
+      .in("draft_id", templateDraftIds);
+    requireSuccess(approvalDeleteError);
+    const { error: templateDraftDeleteError } = await client
+      .from("comms_drafts")
+      .delete()
+      .in("id", templateDraftIds);
+    requireSuccess(templateDraftDeleteError);
+  }
+
   const [currentSignals, legacySignals] = await Promise.all([
     client.from("signals").select("id").like("dedupe_hash", "synthetic-demo:%"),
     client.from("signals").select("id").like("dedupe_hash", "demo-seed-%"),
@@ -251,10 +274,10 @@ export const injectSyntheticDisruption =
         "Synthetic assessment produced zero flags; demo cascade was not created.",
       );
 
-    const pending =
-      assessment.result.pendingDraftRefs.find((candidate) =>
-        candidate.flag.signal.dedupeHash.startsWith("synthetic-demo:"),
-      ) ?? assessment.result.pendingDraftRefs[0];
+    // Never fall back to a live flag: only attach demo drafts to synthetic flags.
+    const pending = assessment.result.pendingDraftRefs.find((candidate) =>
+      isSyntheticDedupeHash(candidate.flag.signal.dedupeHash),
+    );
     let pendingDrafts = 0;
     if (pending !== undefined) {
       const { data: recommendation, error: recommendationError } = await client
@@ -274,7 +297,7 @@ export const injectSyntheticDisruption =
             subject: `Simulated: ${pending.flag.signal.disruptionType.replaceAll("_", " ")}`,
             body: `Simulated disruption: a ${pending.flag.signal.disruptionType.replaceAll("_", " ")} affects this supply route. Please confirm the updated delivery plan and available mitigation options.`,
             tone: "direct and collaborative",
-            model_used: "synthetic-demo-template",
+            model_used: SYNTHETIC_DEMO_MODEL,
             status: "pending_approval",
             tick_id: context.tickId,
             created_at: detectedAt,
