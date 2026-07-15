@@ -13,7 +13,13 @@ import {
   type DashboardNetwork,
   type DashboardSeverityBreakdown,
 } from "@/lib/dashboard/map-model";
+import {
+  parseStoredEvidence,
+  parseStoredGeo,
+  type DashboardSignalEvidence,
+} from "@/lib/dashboard/signal-evidence";
 import { createSupabaseAdminClient } from "@/lib/db/admin-client";
+import type { Geo } from "@/lib/domain";
 
 export interface DashboardSignal {
   id: string;
@@ -22,6 +28,10 @@ export interface DashboardSignal {
   severity: "low" | "med" | "high" | "unknown";
   status: "active" | "stale" | "degraded" | "resolved";
   detectedAt: string;
+  disruptionType: string;
+  rawRef: string;
+  geo: Geo | null;
+  evidence: DashboardSignalEvidence | null;
 }
 
 export interface DashboardRisk {
@@ -403,6 +413,10 @@ export const loadDashboard = async (): Promise<DashboardData> => {
         severity: signal.severity,
         status: signal.status,
         detectedAt: signal.detected_at,
+        disruptionType: signal.disruption_type,
+        rawRef: signal.raw_ref,
+        geo: parseStoredGeo(signal.geo),
+        evidence: parseStoredEvidence(signal.source, signal.evidence),
       })),
       risks,
       drafts: draftsMapped,

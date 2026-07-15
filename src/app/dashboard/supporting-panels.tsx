@@ -5,6 +5,7 @@ import { useState } from "react";
 import {
   formatAlertLevel,
   formatAlertMessage,
+  formatDisruptionType,
   formatRegionList,
   formatSeverityLabel,
   formatSignalSource,
@@ -14,7 +15,14 @@ import {
 import type {
   DashboardAlert,
   DashboardData,
+  DashboardSignal,
 } from "@/lib/dashboard/load-dashboard";
+import {
+  isNewsEvidence,
+  isWeatherEvidence,
+  newsArticleUrl,
+  openMeteoForecastUrl,
+} from "@/lib/dashboard/signal-evidence";
 
 import styles from "./page.module.css";
 
@@ -22,37 +30,160 @@ const EmptyState = ({ children }: { children: React.ReactNode }) => (
   <p className={styles.emptyState}>{children}</p>
 );
 
-const SignalItem = ({
-  signal,
-}: {
-  signal: DashboardData["signals"][number];
-}) => (
-  <li>
-    <div className={styles.signalTopline}>
-      <span
-        className={`${styles.chip} ${styles[`severity${signal.severity}`]}`}
-      >
-        {formatSeverityLabel(signal.severity)}
-      </span>
-      <span className={styles.source}>{formatSignalSource(signal.source)}</span>
-      <time className={styles.signalTime} dateTime={signal.detectedAt}>
-        {formatTimestamp(signal.detectedAt)}
-      </time>
+const SignalEvidenceDetail = ({ signal }: { signal: DashboardSignal }) => {
+  const articleUrl = newsArticleUrl({
+    evidence: isNewsEvidence(signal.evidence) ? signal.evidence : null,
+    rawRef: signal.rawRef,
+  });
+  const point =
+    signal.geo !== null && signal.geo.kind === "point" ? signal.geo : null;
+
+  return (
+    <div className={styles.signalDetail}>
+      <dl className={styles.signalDetailGrid}>
+        <div className={styles.signalDetailField}>
+          <dt>Classification</dt>
+          <dd>{formatDisruptionType(signal.disruptionType)}</dd>
+        </div>
+        <div className={styles.signalDetailField}>
+          <dt>Severity</dt>
+          <dd>{formatSeverityLabel(signal.severity)}</dd>
+        </div>
+        <div className={styles.signalDetailField}>
+          <dt>Region</dt>
+          <dd>{formatRegionList(signal.regions)}</dd>
+        </div>
+        <div className={styles.signalDetailField}>
+          <dt>Detected</dt>
+          <dd>
+            <time dateTime={signal.detectedAt}>
+              {formatTimestamp(signal.detectedAt)}
+            </time>
+          </dd>
+        </div>
+      </dl>
+
+      {signal.source === "news" ? (
+        <div className={styles.signalEvidenceBlock}>
+          {isNewsEvidence(signal.evidence) ? (
+            <>
+              <p className={styles.signalEvidenceLine}>
+                {signal.evidence.title !== null &&
+                signal.evidence.title.trim().length > 0
+                  ? signal.evidence.title
+                  : "Article title not captured"}
+              </p>
+              <p className={styles.signalEvidenceMeta}>
+                Feed: {signal.evidence.feedName}
+              </p>
+            </>
+          ) : (
+            <p className={styles.signalEvidenceMeta}>
+              Source metadata not captured for this signal.
+            </p>
+          )}
+          {articleUrl !== null ? (
+            <a
+              className={styles.signalEvidenceLink}
+              href={articleUrl}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              View source article
+            </a>
+          ) : (
+            <p className={styles.signalEvidenceMeta}>
+              Source link not available
+            </p>
+          )}
+        </div>
+      ) : null}
+
+      {signal.source === "weather" ? (
+        <div className={styles.signalEvidenceBlock}>
+          {isWeatherEvidence(signal.evidence) ? (
+            <>
+              <p className={styles.signalEvidenceLine}>
+                Wind gusts {signal.evidence.windGust} km/h, precipitation{" "}
+                {signal.evidence.precipitation} mm -{" "}
+                {signal.evidence.thresholdRule}
+              </p>
+              <p className={styles.signalEvidenceMeta}>
+                Location: {signal.evidence.locationName}
+              </p>
+            </>
+          ) : (
+            <p className={styles.signalEvidenceMeta}>
+              Measurement detail not captured for this signal
+            </p>
+          )}
+          {point !== null ? (
+            <a
+              className={styles.signalEvidenceLink}
+              href={openMeteoForecastUrl(point.lat, point.lon)}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              View forecast
+            </a>
+          ) : null}
+        </div>
+      ) : null}
     </div>
-    <p>{formatRegionList(signal.regions)}</p>
-    <span
-      className={`${styles.status} ${
-        signal.status === "resolved"
-          ? styles.statusCleared
-          : signal.status === "degraded"
-            ? styles.statusDegraded
-            : ""
-      }`}
+  );
+};
+
+const SignalItem = ({ signal }: { signal: DashboardSignal }) => {
+  const [expanded, setExpanded] = useState(false);
+  const detailId = `signal-detail-${signal.id}`;
+
+  return (
+    <li
+      className={`${styles.signalRowItem} ${expanded ? styles.signalRowItemOpen : ""}`}
     >
-      {formatSignalStatus(signal.status)}
-    </span>
-  </li>
-);
+      <button
+        aria-controls={detailId}
+        aria-expanded={expanded}
+        className={styles.signalRowTrigger}
+        onClick={() => setExpanded((current) => !current)}
+        type="button"
+      >
+        <div className={styles.signalTopline}>
+          <span
+            className={`${styles.chip} ${styles[`severity${signal.severity}`]}`}
+          >
+            {formatSeverityLabel(signal.severity)}
+          </span>
+          <span className={styles.source}>
+            {formatSignalSource(signal.source)}
+          </span>
+          <time className={styles.signalTime} dateTime={signal.detectedAt}>
+            {formatTimestamp(signal.detectedAt)}
+          </time>
+        </div>
+        <p className={styles.signalListRegion}>
+          {formatRegionList(signal.regions)}
+        </p>
+        <span
+          className={`${styles.status} ${
+            signal.status === "resolved"
+              ? styles.statusCleared
+              : signal.status === "degraded"
+                ? styles.statusDegraded
+                : ""
+          }`}
+        >
+          {formatSignalStatus(signal.status)}
+        </span>
+      </button>
+      {expanded ? (
+        <div className={styles.signalDetailWrap} id={detailId}>
+          <SignalEvidenceDetail signal={signal} />
+        </div>
+      ) : null}
+    </li>
+  );
+};
 
 const ONGOING_VISIBLE = 5;
 

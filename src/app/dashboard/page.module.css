@@ -551,7 +551,30 @@
   border-bottom: 0;
 }
 
+.signalRowItem {
+  list-style: none;
+}
+
+.signalRowTrigger {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: block;
+  font: inherit;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.signalRowTrigger:hover .signalListRegion,
+.signalRowItemOpen .signalListRegion {
+  color: var(--accent-text);
+}
+
 .signalTopline {
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   justify-content: flex-start;
 }
@@ -567,11 +590,68 @@
   margin-left: auto;
 }
 
-.signalList p {
+.signalList p,
+.signalListRegion {
   color: var(--ink-strong);
   font-size: 0.8rem;
   font-weight: 650;
   margin: 4px 0;
+}
+
+.signalDetailWrap {
+  margin-top: 8px;
+  padding: 8px 0 2px;
+}
+
+.signalDetailGrid {
+  display: grid;
+  gap: 8px 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.signalDetailField dt {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.signalDetailField dd {
+  color: var(--ink-strong);
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin: 2px 0 0;
+}
+
+.signalEvidenceBlock {
+  border-top: 1px solid var(--line);
+  margin-top: 10px;
+  padding-top: 8px;
+}
+
+.signalEvidenceLine {
+  color: var(--ink-strong);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0 0 4px;
+}
+
+.signalEvidenceMeta {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  margin: 0 0 6px;
+}
+
+.signalEvidenceLink {
+  color: var(--accent-text);
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .status {
