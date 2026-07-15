@@ -43,3 +43,6 @@ supabase/.branches
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# Local-only interview study guide (never push)
+docs/PROJECT_REFERENCE.md
