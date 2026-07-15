@@ -349,6 +349,7 @@ export type Database = {
           delay_days_estimate: number
           detected_at: string
           disruption_type: string
+          evidence: Json | null
           expires_at: string | null
           geo: Json
           id: string
@@ -364,6 +365,7 @@ export type Database = {
           delay_days_estimate: number
           detected_at: string
           disruption_type: string
+          evidence?: Json | null
           expires_at?: string | null
           geo: Json
           id?: string
@@ -379,6 +381,7 @@ export type Database = {
           delay_days_estimate?: number
           detected_at?: string
           disruption_type?: string
+          evidence?: Json | null
           expires_at?: string | null
           geo?: Json
           id?: string
@@ -513,6 +516,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      configure_hourly_supply_watch_tick: {
+        Args: { p_tick_secret: string }
+        Returns: undefined
+      }
       release_tick_lock: { Args: never; Returns: undefined }
       try_tick_lock: { Args: never; Returns: boolean }
     }

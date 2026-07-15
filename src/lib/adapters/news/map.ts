@@ -6,7 +6,7 @@ import { extractWithLlm } from "@/lib/adapters/news/extract-llm";
 import type { NewsItemWire } from "@/lib/adapters/news/rss.wire";
 import { env } from "@/lib/config/env";
 import { signalSchema } from "@/lib/domain";
-import type { Signal } from "@/lib/domain";
+import type { NewsSignalEvidence, Signal } from "@/lib/domain";
 import type { RunContext } from "@/lib/runtime/run-context";
 
 const stableHash = (value: string): string =>
@@ -16,6 +16,31 @@ const stableUuid = (value: string): string => {
   const hash = stableHash(value);
   return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-8${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
 };
+
+/** Display name from the real feed URL we fetched; hostname fallback for custom feeds. */
+export const feedNameFromUrl = (feedUrl: string): string => {
+  if (feedUrl.includes("freightwaves.com")) return "FreightWaves";
+  if (feedUrl.includes("supplychaindive.com")) return "Supply Chain Dive";
+  try {
+    return new URL(feedUrl).hostname;
+  } catch {
+    return feedUrl;
+  }
+};
+
+export interface NewsItemSource {
+  item: NewsItemWire;
+  feedName: string;
+}
+
+const newsEvidence = (
+  item: NewsItemWire,
+  feedName: string,
+): NewsSignalEvidence => ({
+  title: item.title ?? null,
+  feedName,
+  articleUrl: item.link ?? null,
+});
 
 const validatedSignal = (
   candidate: unknown,
@@ -33,43 +58,56 @@ const validatedSignal = (
   return parsed.data;
 };
 
+const buildNewsSignal = (
+  source: NewsItemSource,
+  classification: {
+    disruptionType: string;
+    affectedRegions: string[];
+    severity: "low" | "med" | "high";
+    delayDaysEstimate: number;
+  },
+  ctx: RunContext,
+): Signal | undefined => {
+  const { item, feedName } = source;
+  const detectedAt = ctx.clock.now().toISOString();
+  const canonicalItemKey = item.link ?? item.title ?? "unidentified-news-item";
+  const canonical = `news|${canonicalItemKey}|${detectedAt.slice(0, 10)}`;
+  const isDegraded = classification.affectedRegions.length === 0;
+  return validatedSignal(
+    {
+      id: stableUuid(canonical),
+      source: "news",
+      disruptionType: classification.disruptionType,
+      affectedRegions: classification.affectedRegions,
+      geo: { kind: "regions", regionCodes: classification.affectedRegions },
+      severity: isDegraded ? "unknown" : classification.severity,
+      delayDaysEstimate: classification.delayDaysEstimate,
+      confidence: isDegraded ? "low" : "high",
+      detectedAt,
+      rawRef: canonicalItemKey,
+      dedupeHash: stableHash(canonical),
+      status: isDegraded ? "degraded" : "active",
+      evidence: newsEvidence(item, feedName),
+    },
+    ctx,
+  );
+};
+
 export const mapItemsToSignals = (
-  items: readonly NewsItemWire[],
+  sources: readonly NewsItemSource[],
   ctx: RunContext,
 ): Signal[] =>
-  items.flatMap((item) => {
-    if (!preFilter(item)) {
+  sources.flatMap((source) => {
+    if (!preFilter(source.item)) {
       return [];
     }
 
-    const classification = classify(item);
+    const classification = classify(source.item);
     if (classification === null) {
       return [];
     }
 
-    const detectedAt = ctx.clock.now().toISOString();
-    const canonicalItemKey =
-      item.link ?? item.title ?? "unidentified-news-item";
-    const canonical = `news|${canonicalItemKey}|${detectedAt.slice(0, 10)}`;
-    const isDegraded = classification.affectedRegions.length === 0;
-    const signal = validatedSignal(
-      {
-        id: stableUuid(canonical),
-        source: "news",
-        disruptionType: classification.disruptionType,
-        affectedRegions: classification.affectedRegions,
-        geo: { kind: "regions", regionCodes: classification.affectedRegions },
-        severity: isDegraded ? "unknown" : classification.severity,
-        delayDaysEstimate: classification.delayDaysEstimate,
-        confidence: isDegraded ? "low" : "high",
-        detectedAt,
-        rawRef: canonicalItemKey,
-        dedupeHash: stableHash(canonical),
-        status: isDegraded ? "degraded" : "active",
-      },
-      ctx,
-    );
-
+    const signal = buildNewsSignal(source, classification, ctx);
     return signal === undefined ? [] : [signal];
   });
 
@@ -88,7 +126,7 @@ export interface NewsMappingResult {
 const GPT_4O_MINI_INPUT_OUTPUT_USD_PER_1K_TOKENS = 0.0006;
 
 export const mapItemsToSignalsWithOptionalLlm = async (
-  items: readonly NewsItemWire[],
+  sources: readonly NewsItemSource[],
   ctx: RunContext,
   options: NewsLlmOptions = {},
 ): Promise<NewsMappingResult> => {
@@ -97,14 +135,14 @@ export const mapItemsToSignalsWithOptionalLlm = async (
   let llmCalls = 0;
   const signals: Signal[] = [];
 
-  for (const item of items) {
-    if (!preFilter(item)) continue;
-    const deterministic = classify(item);
+  for (const source of sources) {
+    if (!preFilter(source.item)) continue;
+    const deterministic = classify(source.item);
     if (deterministic === null) continue;
     const extraction =
       enableLlm && llmCalls < maxLlm
         ? ((llmCalls += 1),
-          await extractWithLlm(item, { client: options.llmClient }))
+          await extractWithLlm(source.item, { client: options.llmClient }))
         : null;
     const classification =
       extraction === null
@@ -118,27 +156,7 @@ export const mapItemsToSignalsWithOptionalLlm = async (
                 ? deterministic.severity
                 : extraction.severityHint,
           };
-    const detectedAt = ctx.clock.now().toISOString();
-    const key = item.link ?? item.title ?? "unidentified-news-item";
-    const canonical = `news|${key}|${detectedAt.slice(0, 10)}`;
-    const degraded = classification.affectedRegions.length === 0;
-    const signal = validatedSignal(
-      {
-        id: stableUuid(canonical),
-        source: "news",
-        disruptionType: classification.disruptionType,
-        affectedRegions: classification.affectedRegions,
-        geo: { kind: "regions", regionCodes: classification.affectedRegions },
-        severity: degraded ? "unknown" : classification.severity,
-        delayDaysEstimate: classification.delayDaysEstimate,
-        confidence: degraded ? "low" : "high",
-        detectedAt,
-        rawRef: key,
-        dedupeHash: stableHash(canonical),
-        status: degraded ? "degraded" : "active",
-      },
-      ctx,
-    );
+    const signal = buildNewsSignal(source, classification, ctx);
     if (signal !== undefined) signals.push(signal);
   }
   return {

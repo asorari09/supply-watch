@@ -14,7 +14,11 @@ import {
   type FetchLike,
   type NewsClient,
 } from "@/lib/adapters/news/client";
-import { mapItemsToSignals } from "@/lib/adapters/news/map";
+import {
+  feedNameFromUrl,
+  mapItemsToSignals,
+  type NewsItemSource,
+} from "@/lib/adapters/news/map";
 import type { NewsItemWire } from "@/lib/adapters/news/rss.wire";
 import { signalSchema } from "@/lib/domain";
 import { fixedClock, systemClock } from "@/lib/runtime/clock";
@@ -106,9 +110,14 @@ describe("deterministic pre-filter and classifier", () => {
 });
 
 describe("mapItemsToSignals", () => {
-  const activeItem = itemsFrom(activeXml);
-  const regionlessItem = itemsFrom(regionlessXml);
-  const irrelevantItem = itemsFrom(irrelevantXml);
+  const withFeed = (items: readonly NewsItemWire[]): NewsItemSource[] =>
+    items.map((item) => ({
+      item,
+      feedName: feedNameFromUrl("https://www.freightwaves.com/feed"),
+    }));
+  const activeItem = withFeed(itemsFrom(activeXml));
+  const regionlessItem = withFeed(itemsFrom(regionlessXml));
+  const irrelevantItem = withFeed(itemsFrom(irrelevantXml));
 
   it("maps a resolvable disruption to an active domain signal", () => {
     const [signal] = mapItemsToSignals(activeItem, context);
@@ -120,6 +129,11 @@ describe("mapItemsToSignals", () => {
       delayDaysEstimate: 7,
       affectedRegions: ["US-CA"],
       status: "active",
+      evidence: {
+        title: "Port of Los Angeles closure after labor strike",
+        feedName: "FreightWaves",
+        articleUrl: "https://example.test/los-angeles-closure",
+      },
     });
     expect(signalSchema.safeParse(signal).success).toBe(true);
   });
@@ -132,6 +146,7 @@ describe("mapItemsToSignals", () => {
       severity: "unknown",
       confidence: "low",
       affectedRegions: [],
+      evidence: { feedName: "FreightWaves" },
     });
   });
 

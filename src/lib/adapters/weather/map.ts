@@ -11,6 +11,7 @@ interface WeatherThreshold {
   severity: "low" | "med" | "high";
   delayDaysEstimate: number;
   matches: (values: DailyWeatherValues) => boolean;
+  describe: (values: DailyWeatherValues) => string;
 }
 
 interface DailyWeatherValues {
@@ -26,24 +27,30 @@ const weatherThresholds: readonly WeatherThreshold[] = [
     severity: "high",
     delayDaysEstimate: 7,
     matches: ({ windGustKph }) => windGustKph >= 100,
+    describe: ({ windGustKph }) => `gust ${windGustKph} >= 100 -> storm/high`,
   },
   {
     disruptionType: "flood",
     severity: "high",
     delayDaysEstimate: 5,
     matches: ({ precipitationMm }) => precipitationMm >= 50,
+    describe: ({ precipitationMm }) =>
+      `precipitation ${precipitationMm} >= 50 -> flood/high`,
   },
   {
     disruptionType: "storm",
     severity: "med",
     delayDaysEstimate: 4,
     matches: ({ windGustKph }) => windGustKph >= 40,
+    describe: ({ windGustKph }) => `gust ${windGustKph} >= 40 -> storm/med`,
   },
   {
     disruptionType: "flood",
     severity: "med",
     delayDaysEstimate: 3,
     matches: ({ weatherCode }) => weatherCode >= 63,
+    describe: ({ weatherCode }) =>
+      `weatherCode ${weatherCode} >= 63 -> flood/med`,
   },
 ];
 
@@ -150,6 +157,13 @@ export const mapWireToSignals = (
       rawRef: `open-meteo:${location.name}:${wire.daily.time[0]}`,
       dedupeHash: stableHash(canonical),
       status: "active",
+      evidence: {
+        windGust: values.windGustKph,
+        precipitation: values.precipitationMm,
+        weatherCode: values.weatherCode,
+        thresholdRule: threshold.describe(values),
+        locationName: location.name,
+      },
     },
     ctx,
   );

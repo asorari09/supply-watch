@@ -1,7 +1,10 @@
 import { createNewsLlmClient } from "@/lib/adapters/llm/client";
 import { createRssClient, getNewsFeeds } from "@/lib/adapters/news/client";
 import type { NewsClient, NewsClientSuccess } from "@/lib/adapters/news/client";
-import { mapItemsToSignalsWithOptionalLlm } from "@/lib/adapters/news/map";
+import {
+  feedNameFromUrl,
+  mapItemsToSignalsWithOptionalLlm,
+} from "@/lib/adapters/news/map";
 import type { SignalAdapter, SignalAdapterResult } from "@/lib/adapters/types";
 import { env } from "@/lib/config/env";
 import type { RunContext } from "@/lib/runtime/run-context";
@@ -50,7 +53,12 @@ export class RssNewsAdapter implements SignalAdapter {
       }
 
       const mapping = await mapItemsToSignalsWithOptionalLlm(
-        successfulResults.flatMap(({ result }) => result.items),
+        successfulResults.flatMap(({ feed, result }) =>
+          result.items.map((item) => ({
+            item,
+            feedName: feedNameFromUrl(feed),
+          })),
+        ),
         ctx,
         {
           enableLlm: env.ENABLE_LLM_NEWS,

@@ -24,6 +24,10 @@ const item = (index: number, title = `Shanghai port closure ${index}`) => ({
   description: "China disruption",
   link: `https://example.test/${index}`,
 });
+const sourced = (index: number, title?: string) => ({
+  item: item(index, title),
+  feedName: "FreightWaves",
+});
 const client = (content: string | undefined, throws = false) =>
   ({
     chat: {
@@ -71,7 +75,7 @@ describe("optional LLM news mapping", () => {
       '{"disruptionType":"x","affectedRegions":["CN"],"severityHint":"high"}',
     );
     const result = await mapItemsToSignalsWithOptionalLlm(
-      [item(1), item(2)],
+      [sourced(1), sourced(2)],
       context,
       { enableLlm: false, llmClient: stub },
     );
@@ -83,7 +87,7 @@ describe("optional LLM news mapping", () => {
       '{"disruptionType":"port_closure","affectedRegions":["CN"],"severityHint":"high"}',
     );
     await mapItemsToSignalsWithOptionalLlm(
-      [item(1), item(2), item(3), item(4)],
+      [sourced(1), sourced(2), sourced(3), sourced(4)],
       context,
       { enableLlm: true, maxLlm: 2, llmClient: stub },
     );
@@ -92,7 +96,7 @@ describe("optional LLM news mapping", () => {
   it("never calls the LLM for filtered-out news and falls back after null extraction", async () => {
     const stub = client("not json");
     const result = await mapItemsToSignalsWithOptionalLlm(
-      [item(1), item(2, "Company earnings update")],
+      [sourced(1), sourced(2, "Company earnings update")],
       context,
       { enableLlm: true, maxLlm: 2, llmClient: stub },
     );

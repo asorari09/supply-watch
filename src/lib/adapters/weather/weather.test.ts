@@ -89,6 +89,13 @@ describe("mapWireToSignals", () => {
       severity: "high",
       delayDaysEstimate: 7,
       status: "active",
+      evidence: {
+        windGust: 126.7,
+        precipitation: 82.8,
+        weatherCode: 65,
+        thresholdRule: "gust 126.7 >= 100 -> storm/high",
+        locationName: "Houston, Texas",
+      },
     });
   });
 

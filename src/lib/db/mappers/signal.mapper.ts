@@ -1,4 +1,4 @@
-import type { Database } from "@/lib/db/database.types";
+import type { Database, Json } from "@/lib/db/database.types";
 import type { Signal } from "@/lib/domain";
 
 export const toSignalRow = (
@@ -17,4 +17,7 @@ export const toSignalRow = (
   raw_ref: signal.rawRef,
   dedupe_hash: signal.dedupeHash,
   status: signal.status,
+  ...(signal.evidence === undefined
+    ? {}
+    : { evidence: signal.evidence as Json }),
 });

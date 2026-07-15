@@ -17,6 +17,13 @@ const signal = signalSchema.parse({
   rawRef: "fixture:storm",
   dedupeHash: "weather-us-tx-storm-2026-07-13",
   status: "active",
+  evidence: {
+    windGust: 126.7,
+    precipitation: 82.8,
+    weatherCode: 65,
+    thresholdRule: "gust 126.7 >= 100 -> storm/high",
+    locationName: "Houston, Texas",
+  },
 });
 
 describe("toSignalRow", () => {
@@ -35,6 +42,13 @@ describe("toSignalRow", () => {
       raw_ref: "fixture:storm",
       dedupe_hash: "weather-us-tx-storm-2026-07-13",
       status: "active",
+      evidence: {
+        windGust: 126.7,
+        precipitation: 82.8,
+        weatherCode: 65,
+        thresholdRule: "gust 126.7 >= 100 -> storm/high",
+        locationName: "Houston, Texas",
+      },
     });
   });
 });
