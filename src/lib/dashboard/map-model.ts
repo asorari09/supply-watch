@@ -50,7 +50,7 @@ export interface DashboardNetwork {
   destination: DashboardDestination | null;
   healthyRegionCount: number;
   totalRegionCount: number;
-  /** 0–100 integer */
+  /** 0-100 integer */
   networkHealthPercent: number;
   disruptedRouteCount: number;
 }
@@ -229,7 +229,7 @@ export const buildKpis = (input: {
 
 /**
  * Equirectangular projection into SVG viewBox space.
- * Frame is fitted to the seeded supplier footprint (Americas–Asia)
+ * Frame is fitted to the seeded supplier footprint (Americas-Asia)
  * so real lat/lon pins stay readable; not a world atlas.
  */
 export const NETWORK_MAP_FRAME = {

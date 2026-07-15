@@ -2,6 +2,7 @@
   "name": "supply-watch",
   "version": "0.1.0",
   "private": true,
+  "description": "Supply-chain disruption console: live signals, deterministic reorder math, LLM drafts behind human approval.",
   "engines": {
     "node": ">=22"
   },
