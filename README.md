@@ -1,5 +1,7 @@
 # Supply Watch
 
+[![CI](https://github.com/asorari09/supply-watch/workflows/CI/badge.svg)](https://github.com/asorari09/supply-watch/actions/workflows/ci.yml)
+
 Supply-chain disruption monitoring that turns live weather/news signals into **deterministic reorder decisions**, then drafts supplier emails behind a human approval gate.
 
 **Live demo:** [supply-watch-console.vercel.app](https://supply-watch-console.vercel.app)
@@ -22,6 +24,25 @@ Supply-chain disruption monitoring that turns live weather/news signals into **d
 - **Fail-closed human approval**: send re-checks approval status at send time
 - **Live hourly monitoring** of real weather/news feeds with a **signal-to-source evidence trail** on the dashboard
 
+## Design decisions and tradeoffs
+
+| Decision | Why | Failure it prevents |
+|----------|-----|---------------------|
+| Reorder math is pure functions with **zero LLM** in the decision path (`src/lib/inventory/`) | Planners need reproducible quantities under audit | An LLM inventing ROP/Q that looks plausible but is wrong |
+| Wire-schema vs domain-schema at provider boundaries (Zod) | External feeds lie; adapters must degrade, not throw garbage inland | Corrupted weather/news payloads poisoning inventory state |
+| Comms LLM is schema-locked to subject/body/tone only | Narrative is useful; authority is not | Model "helpfully" changing order quantities in the email |
+| Human approval gate, re-checked at send time | Drafts are cheap; mistaken sends are not | Approving once, then sending a later edited draft without review |
+| Formula-canary in the eval suite | Unit tests can miss a one-line formula bug | Silent ROP regression shipping to the hourly tick |
+
+## Known limitations
+
+- Inventory in this demo is **synthetic**; weather and news signals are **real**
+- RSS is a replaceable adapter; production would swap in a commercial logistics API and real inventory data
+- No RAG / embeddings / vector DB, no PostGIS, no queues or long-lived workers
+- Sends are mock/logged unless `ENABLE_REAL_SEND` is explicitly enabled
+- The system runs end-to-end with every LLM feature off
+- Scenario pass rate is not a headline metric: self-authored scenarios can trivially pass
+
 ## Honest metrics
 
 | Evidence                    | Proof in this repo                                |
@@ -30,8 +51,6 @@ Supply-chain disruption monitoring that turns live weather/news signals into **d
 | Live-DB integration         | **2** tests against an isolated `eval` schema     |
 | Formula-canary              | Sabotage-verified (perturbed ROP fails the suite) |
 | Build / CI LLM cost         | **$0** (LLM mocked / disabled in automated runs)  |
-
-Scenario pass rate is intentionally not a headline metric: self-authored scenarios can trivially pass.
 
 ## Architecture
 
@@ -89,10 +108,6 @@ pnpm seed:demo           # Fresh demo cascade
 pnpm db:verify           # Confirm seed row counts
 ```
 
-## Non-goals / production notes
+## License
 
-- Inventory in this demo is **synthetic**; weather and news signals are **real**
-- RSS is a replaceable adapter; production would swap in a commercial logistics API and real inventory data
-- No RAG / embeddings / vector DB, no PostGIS, no queues or long-lived workers
-- Sends are mock/logged unless `ENABLE_REAL_SEND` is explicitly enabled
-- The system runs end-to-end with every LLM feature off
+MIT
